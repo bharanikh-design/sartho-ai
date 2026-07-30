@@ -2,9 +2,9 @@ name: Generate package lock
 
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches:
-      - feature/work-packages-2-6
+      - main
     paths:
       - package.json
       - .github/workflows/generate-lockfile.yml
@@ -14,16 +14,17 @@ permissions:
 
 jobs:
   lockfile:
+    if: github.head_ref == 'feature/work-packages-2-6'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: feature/work-packages-2-6
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: npm
       - name: Generate package-lock.json
         run: npm install --package-lock-only --ignore-scripts
       - name: Commit lockfile
