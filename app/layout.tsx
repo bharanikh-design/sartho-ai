@@ -11,6 +11,7 @@ import "./account-and-journey.css";
 import "./workspace.css";
 import "./ai-workspace.css";
 import "./account-actions.css";
+import "./loading-and-versions.css";
 import { AppShell } from "@/components/app-shell";
 
 export const metadata: Metadata = {
