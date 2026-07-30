@@ -15,6 +15,14 @@ function friendlyAuthMessage(message: string) {
     return "Google sign-in has not been enabled for Sartho yet. Complete the one-time Google connection in Supabase, then try again.";
   }
 
+  if (
+    value.includes("unable to exchange external code") ||
+    value.includes("invalid_client") ||
+    value.includes("client secret")
+  ) {
+    return "Google accepted your account, but Supabase could not complete the secure code exchange. The Google Client Secret saved in Supabase does not match this Client ID.";
+  }
+
   return message;
 }
 
@@ -25,8 +33,13 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const error = params.get("error");
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const error =
+      hashParams.get("error_description") ??
+      searchParams.get("error") ??
+      hashParams.get("error");
+
     if (error) setMessage(friendlyAuthMessage(error));
 
     supabase.auth.getSession().then(({ data }) => {
