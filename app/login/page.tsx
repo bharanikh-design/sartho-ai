@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
@@ -8,15 +8,11 @@ function friendlyAuthMessage(message: string) {
   const value = message.toLowerCase();
 
   if (value.includes("invalid api key")) {
-    return "Sartho cannot reach its secure account service yet. The Supabase publishable key in this deployment is invalid or out of date.";
+    return "Sartho cannot reach its secure sign-in service yet. The Supabase connection saved in this deployment needs one correction.";
   }
 
-  if (value.includes("email not confirmed")) {
-    return "This account has not been confirmed yet. Confirm it in Supabase, then sign in again.";
-  }
-
-  if (value.includes("invalid login credentials")) {
-    return "The email address or password does not match the authorised Sartho account.";
+  if (value.includes("unsupported provider") || value.includes("provider is not enabled")) {
+    return "Google sign-in has not been enabled for Sartho yet. Complete the one-time Google connection in Supabase, then try again.";
   }
 
   return message;
@@ -25,8 +21,6 @@ function friendlyAuthMessage(message: string) {
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -40,21 +34,21 @@ export default function LoginPage() {
     });
   }, [router, supabase]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function signInWithGoogle() {
     setBusy(true);
     setMessage(null);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/welcome`,
+      },
+    });
 
     if (error) {
+      setBusy(false);
       setMessage(friendlyAuthMessage(error.message));
-      return;
     }
-
-    router.replace("/welcome");
-    router.refresh();
   }
 
   return (
@@ -91,52 +85,37 @@ export default function LoginPage() {
 
       <section className="auth-card glass-strong">
         <div className="auth-card-heading">
-          <span className="auth-kicker">Private career workspace</span>
-          <h2>Welcome back</h2>
-          <p>Sign in with the authorised Sartho account to continue your journey.</p>
+          <span className="auth-kicker">Your secure career workspace</span>
+          <h2>Welcome to Sartho</h2>
+          <p>Use your Google account. No new password and no separate account-registration form.</p>
         </div>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label>
-            <span>Email address</span>
-            <input
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </label>
+        <button type="button" className="oauth-button" onClick={signInWithGoogle} disabled={busy}>
+          <GoogleIcon />
+          <span>{busy ? "Connecting to Google…" : "Continue with Google"}</span>
+        </button>
 
-          <label>
-            <span>Password</span>
-            <input
-              type="password"
-              minLength={8}
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Your password"
-              required
-            />
-          </label>
-
-          {message ? <div className="auth-message error" role="alert">{message}</div> : null}
-
-          <button type="submit" className="primary-button auth-submit" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in to Sartho"}
-          </button>
-        </form>
+        {message ? <div className="auth-message error" role="alert">{message}</div> : null}
 
         <p className="auth-access-note">
-          Access is currently invitation-only. Accounts are created securely by the workspace administrator.
+          During private beta, access is limited to approved Google accounts.
         </p>
 
         <p className="auth-footnote">
-          Your career information belongs to you. Nothing is used in an application or submitted without your approval.
+          Signing in only verifies who you are. Sartho will not read Gmail or submit an application unless you separately approve that connection and action.
         </p>
       </section>
     </main>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
+      <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.06v2.62A10 10 0 0 0 12 22Z" />
+      <path fill="#FBBC05" d="M6.41 13.94A6.02 6.02 0 0 1 6.1 12c0-.67.12-1.33.31-1.94V7.44H3.06A10 10 0 0 0 2 12c0 1.61.38 3.14 1.06 4.56l3.35-2.62Z" />
+      <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.87-2.88A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.94 5.44l3.35 2.62C7.2 7.7 9.4 5.94 12 5.94Z" />
+    </svg>
   );
 }
