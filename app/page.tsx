@@ -1,44 +1,71 @@
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { careerProfile, evidenceItems } from "@/data/profile";
 
-const flow = [
-  ["Career Truth", "Verify the experience Sartho may use."],
-  ["Role Intelligence", "Read the role beyond keyword matching."],
-  ["Application", "Create an honest, targeted application."],
-  ["Outcome", "Track every response and next action."],
+const actions = [
+  {
+    href: "/career-truth",
+    symbol: "✓",
+    label: "Evidence to review",
+    value: String(evidenceItems.length),
+    note: "Confirm what Sartho may use",
+    action: "Review Career Profile",
+    tour: "career-profile",
+  },
+  {
+    href: "/jobs",
+    symbol: "✦",
+    label: "Analyse a role",
+    value: "New",
+    note: "Requirements, recruiter signals and fit",
+    action: "Start role analysis",
+    tour: "analyse-role",
+  },
+  {
+    href: "/applications",
+    symbol: "↗",
+    label: "Application journey",
+    value: "0",
+    note: "Track messages, interviews and outcomes",
+    action: "Open applications",
+    tour: "applications",
+  },
 ];
 
 export default function HomePage() {
   return (
     <div className="page-stack">
-      <section className="hero-panel glass-card">
+      <section className="hero-panel home-hero glass-card">
         <div className="hero-copy">
-          <div className="page-eyebrow"><span className="live-dot" /> Evidence-led career intelligence</div>
-          <h1>Find work worthy of your experience.</h1>
+          <div className="page-eyebrow"><span className="live-dot" /> Evidence-led AI Career Copilot</div>
+          <h1>Find the right role.<br />Prove your fit.</h1>
           <p>
-            Sartho turns your verified career evidence into focused job discovery, honest fit analysis,
-            tailored applications and one clear view of every outcome.
+            Sartho connects verified career evidence to role matching, truthful résumé decisions,
+            interview preparation and one clear view of every outcome.
           </p>
           <div className="hero-actions">
-            <Link href="/jobs" className="primary-button">Analyse a job <span aria-hidden="true">↗</span></Link>
-            <Link href="/career-truth" className="secondary-button">Review Career Truth</Link>
+            <Link href="/jobs" className="primary-button" data-tour="analyse-role">Analyse a role <span aria-hidden="true">↗</span></Link>
+            <Link href="/career-truth" className="secondary-button" data-tour="career-profile">Review Career Profile</Link>
           </div>
         </div>
 
-        <div className="hero-focus" aria-label={`${evidenceItems.length} career evidence items awaiting review`}>
-          <div className="focus-orbit">
-            <span className="orbit-label orbit-label-one">Human approved</span>
-            <span className="orbit-label orbit-label-two">Evidence first</span>
-            <div className="focus-core"><strong>{evidenceItems.length}</strong><span>truth items</span></div>
-          </div>
+        <div className="home-hero-signal" aria-label={`${evidenceItems.length} career evidence items awaiting review`}>
+          <span className="signal-label">Career readiness</span>
+          <strong>Start with truth</strong>
+          <p>{evidenceItems.length} evidence records are ready for your confirmation.</p>
+          <Link href="/career-truth">Continue review <span aria-hidden="true">→</span></Link>
         </div>
       </section>
 
-      <section className="metric-grid" aria-label="Workspace status">
-        <Metric symbol="✓" label="Career evidence" value={String(evidenceItems.length)} note="Ready for your review" />
-        <Metric symbol="◎" label="Target role lanes" value="3" note="Leadership positioning locked" />
-        <Metric symbol="↗" label="Unattended submissions" value="0" note="You remain in control" />
+      <section className="metric-grid action-metric-grid" aria-label="Your next actions">
+        {actions.map((action) => (
+          <Link key={action.href} href={action.href} className="glass-card-soft metric-card action-metric" data-tour={action.tour}>
+            <span className="metric-icon" aria-hidden="true">{action.symbol}</span>
+            <div className="metric-label">{action.label}</div>
+            <div className="metric-value">{action.value}</div>
+            <div className="metric-note">{action.note}</div>
+            <span className="metric-action">{action.action}<span aria-hidden="true">→</span></span>
+          </Link>
+        ))}
       </section>
 
       <section className="dashboard-grid">
@@ -65,50 +92,21 @@ export default function HomePage() {
           </div>
         </article>
 
-        <article className="glass-card content-card next-card">
-          <div className="next-card-visual">
-            <div className="progress-ring" style={{ "--progress": "0deg" } as CSSProperties}>
-              <div className="progress-ring-content"><strong>0%</strong><span>approved</span></div>
-            </div>
-          </div>
-          <div className="next-card-copy">
-            <div className="page-eyebrow">Next best action</div>
-            <h3>Confirm your career evidence</h3>
-            <p>Review the first evidence records so future matching and résumé tailoring can be grounded in facts you trust.</p>
-            <Link href="/career-truth" className="primary-button">Start review <span aria-hidden="true">→</span></Link>
+        <article className="glass-card content-card next-card action-next-card">
+          <div className="page-eyebrow">Next best action</div>
+          <h3>Verify three transition achievements</h3>
+          <p>That will improve Sartho’s confidence when matching you to Transition, EUC, ITSM and delivery-leadership roles.</p>
+          <div className="impact-row"><span>Impact</span><strong>Unlocks accurate résumé tailoring</strong></div>
+          <div className="impact-row"><span>Estimated effort</span><strong>3 minutes</strong></div>
+          <div className="next-action-buttons">
+            <Link href="/career-truth" className="primary-button">Start <span aria-hidden="true">→</span></Link>
+            <details className="why-details">
+              <summary>Why this?</summary>
+              <p>Role matching is only as reliable as the evidence behind it. Confirming these programme achievements lets Sartho show recruiters the scale, governance and outcomes that distinguish your profile.</p>
+            </details>
           </div>
         </article>
       </section>
-
-      <section className="glass-card flow-card">
-        <div className="card-header">
-          <div>
-            <h2 className="section-heading">How Sartho works</h2>
-            <p className="section-subtitle">One controlled path from experience to opportunity.</p>
-          </div>
-          <span className="meta-pill"><span className="live-dot" /> Foundation active</span>
-        </div>
-        <div className="flow-grid">
-          {flow.map(([title, description], index) => (
-            <div key={title} className={`flow-step${index === 0 ? " is-current" : ""}`}>
-              <span className="flow-step-number">0{index + 1}</span>
-              <strong>{title}</strong>
-              <p>{description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
-  );
-}
-
-function Metric({ symbol, label, value, note }: { symbol: string; label: string; value: string; note: string }) {
-  return (
-    <article className="glass-card-soft metric-card">
-      <span className="metric-icon" aria-hidden="true">{symbol}</span>
-      <div className="metric-label">{label}</div>
-      <div className="metric-value">{value}</div>
-      <div className="metric-note">{note}</div>
-    </article>
   );
 }
