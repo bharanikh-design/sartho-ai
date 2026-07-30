@@ -73,7 +73,7 @@ export function ProductTour() {
       return;
     }
     setRect(null);
-    setStepIndex(stepIndex + 1);
+    setStepIndex((current) => (current === null ? 0 : current + 1));
   }
 
   const cardStyle = rect
@@ -97,8 +97,19 @@ export function ProductTour() {
         <p>{step.description}</p>
         <div className="tour-actions">
           <button type="button" className="ghost-button" onClick={close}>Skip</button>
-          {stepIndex > 0 ? <button type="button" className="secondary-button" onClick={() => setStepIndex(stepIndex - 1)}>Back</button> : null}
-          <button type="button" className="primary-button" onClick={next}>{stepIndex === steps.length - 1 ? "Finish" : "Next"}<span aria-hidden="true">→</span></button>
+          {stepIndex > 0 ? (
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => setStepIndex((current) => (current === null ? 0 : current - 1))}
+            >
+              Back
+            </button>
+          ) : null}
+          <button type="button" className="primary-button" onClick={next}>
+            {stepIndex === steps.length - 1 ? "Finish" : "Next"}
+            <span aria-hidden="true">→</span>
+          </button>
         </div>
       </div>
     </div>
