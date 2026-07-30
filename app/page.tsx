@@ -21,6 +21,22 @@ const actions = [
     tour: "analyse-role",
   },
   {
+    href: "/resume-studio",
+    symbol: "R",
+    label: "Résumé Studio",
+    value: "Build",
+    note: "Master, role-focused and job-specific versions",
+    action: "Open Résumé Studio",
+  },
+  {
+    href: "/interview-prep",
+    symbol: "Q",
+    label: "Interview Prep",
+    value: "Prepare",
+    note: "Likely questions and evidence-backed answers",
+    action: "Start preparation",
+  },
+  {
     href: "/applications",
     symbol: "↗",
     label: "Application journey",
@@ -36,27 +52,27 @@ export default function HomePage() {
     <div className="page-stack">
       <section className="hero-panel home-hero glass-card">
         <div className="hero-copy">
-          <div className="page-eyebrow"><span className="live-dot" /> Evidence-led AI Career Copilot</div>
-          <h1>Find the right role.<br />Prove your fit.</h1>
+          <div className="page-eyebrow"><span className="live-dot" /> Sartho AI · Your career, intelligently guided.</div>
+          <h1>Find it. Prepare for it.<br />Land it.</h1>
           <p>
-            Sartho connects verified career evidence to role matching, truthful résumé decisions,
-            interview preparation and one clear view of every outcome.
+            Sartho helps you discover work worthy of your experience, prove why you belong,
+            shape the right résumé and walk into every opportunity ready.
           </p>
           <div className="hero-actions">
             <Link href="/jobs" className="primary-button" data-tour="analyse-role">Analyse a role <span aria-hidden="true">↗</span></Link>
-            <Link href="/career-truth" className="secondary-button" data-tour="career-profile">Review Career Profile</Link>
+            <Link href="/welcome?replay=1" className="secondary-button">Play product tour</Link>
           </div>
         </div>
 
         <div className="home-hero-signal" aria-label={`${evidenceItems.length} career evidence items awaiting review`}>
-          <span className="signal-label">Career readiness</span>
-          <strong>Start with truth</strong>
-          <p>{evidenceItems.length} evidence records are ready for your confirmation.</p>
-          <Link href="/career-truth">Continue review <span aria-hidden="true">→</span></Link>
+          <span className="signal-label">Your next chapter</span>
+          <strong>One right role can change everything.</strong>
+          <p>{evidenceItems.length} career evidence records are ready to strengthen your next application.</p>
+          <Link href="/career-truth">Build my Career Profile <span aria-hidden="true">→</span></Link>
         </div>
       </section>
 
-      <section className="metric-grid action-metric-grid" aria-label="Your next actions">
+      <section className="metric-grid action-metric-grid" aria-label="Your Sartho journey">
         {actions.map((action) => (
           <Link key={action.href} href={action.href} className="glass-card-soft metric-card action-metric" data-tour={action.tour}>
             <span className="metric-icon" aria-hidden="true">{action.symbol}</span>
@@ -94,15 +110,15 @@ export default function HomePage() {
 
         <article className="glass-card content-card next-card action-next-card">
           <div className="page-eyebrow">Next best action</div>
-          <h3>Verify three transition achievements</h3>
-          <p>That will improve Sartho’s confidence when matching you to Transition, EUC, ITSM and delivery-leadership roles.</p>
-          <div className="impact-row"><span>Impact</span><strong>Unlocks accurate résumé tailoring</strong></div>
-          <div className="impact-row"><span>Estimated effort</span><strong>3 minutes</strong></div>
+          <h3>Analyse the NTT Transition & Transformation role</h3>
+          <p>Use the first real recruiter-led opportunity to test Sartho’s match reasoning, résumé direction and interview preparation journey.</p>
+          <div className="impact-row"><span>Impact</span><strong>Creates the first complete role journey</strong></div>
+          <div className="impact-row"><span>Then</span><strong>Résumé Studio and Interview Prep</strong></div>
           <div className="next-action-buttons">
-            <Link href="/career-truth" className="primary-button">Start <span aria-hidden="true">→</span></Link>
+            <Link href="/jobs" className="primary-button">Start analysis <span aria-hidden="true">→</span></Link>
             <details className="why-details">
               <summary>Why this?</summary>
-              <p>Role matching is only as reliable as the evidence behind it. Confirming these programme achievements lets Sartho show recruiters the scale, governance and outcomes that distinguish your profile.</p>
+              <p>This role arrived through a real recruiter redirect and strongly matches your transition, EUC, infrastructure, ITSM and operational-handover experience. It is the right first case for the complete Sartho workflow.</p>
             </details>
           </div>
         </article>
