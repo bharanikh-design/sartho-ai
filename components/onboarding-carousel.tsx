@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase";
 
@@ -54,40 +54,23 @@ const slides: Slide[] = [
 export function OnboardingCarousel({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const supabase = useMemo(() => createClient(), []);
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(false);
+  const [replay, setReplay] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const replay = searchParams.get("tour") === "1";
   const completed = user.user_metadata?.sartho_onboarding_complete === true;
   const fullName = (user.user_metadata?.full_name as string | undefined) || user.email?.split("@")[0] || "there";
   const firstName = fullName.split(" ")[0];
 
   useEffect(() => {
-    setVisible(pathname === "/" && (replay || !completed));
-  }, [completed, pathname, replay]);
+    const shouldReplay = new URLSearchParams(window.location.search).get("tour") === "1";
+    setReplay(shouldReplay);
+    setVisible(pathname === "/" && (shouldReplay || !completed));
+  }, [completed, pathname]);
 
-  useEffect(() => {
-    if (!visible) return;
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") void finish();
-      if (event.key === "ArrowRight") setIndex((current) => Math.min(slides.length - 1, current + 1));
-      if (event.key === "ArrowLeft") setIndex((current) => Math.max(0, current - 1));
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [visible]);
-
-  if (!visible) return null;
-
-  const slide = slides[index];
-  const isLast = index === slides.length - 1;
-
-  async function finish() {
+  const finish = useCallback(async () => {
     if (saving) return;
     setSaving(true);
 
@@ -101,7 +84,25 @@ export function OnboardingCarousel({ user }: { user: User }) {
     setSaving(false);
     if (replay) router.replace("/");
     router.refresh();
-  }
+  }, [completed, replay, router, saving, supabase]);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") void finish();
+      if (event.key === "ArrowRight") setIndex((current) => Math.min(slides.length - 1, current + 1));
+      if (event.key === "ArrowLeft") setIndex((current) => Math.max(0, current - 1));
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [finish, visible]);
+
+  if (!visible) return null;
+
+  const slide = slides[index];
+  const isLast = index === slides.length - 1;
 
   return (
     <div className="onboarding-overlay" role="dialog" aria-modal="true" aria-label="Welcome to Sartho">
