@@ -87,6 +87,7 @@
 
 .auth-form {
   gap: 18px;
+  margin-top: 30px;
 }
 
 .auth-form label {
@@ -115,6 +116,18 @@
 .auth-switch {
   margin-top: 21px;
   font-size: 14px;
+}
+
+.auth-access-note {
+  margin: 20px 0 0;
+  padding: 15px 16px;
+  border: 1px solid rgba(143, 176, 255, .13);
+  border-radius: 14px;
+  color: var(--text-secondary);
+  background: rgba(119, 158, 255, .055);
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: center;
 }
 
 .auth-footnote {
