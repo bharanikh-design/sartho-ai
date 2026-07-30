@@ -6,30 +6,30 @@ import { createClient } from "@/lib/supabase";
 
 const slides = [
   {
-    eyebrow: "Start with truth",
-    title: "Build a career profile Sartho can trust.",
-    description: "Review the roles, achievements and skills Sartho may use. Every recommendation and résumé edit should trace back to evidence you have approved.",
+    eyebrow: "Turn experience into possibility",
+    title: "Your career story deserves to open the right doors.",
+    description: "Bring together the roles, achievements and strengths that define you. Sartho creates a trusted foundation so every recommendation reflects what you have genuinely accomplished.",
     badge: "Available now",
     visual: "profile",
   },
   {
-    eyebrow: "Understand the role",
-    title: "See the match beyond keywords.",
-    description: "Paste a role or job description. Sartho separates required qualifications, preferred signals, technical heaviness, recruiter priorities and genuine gaps.",
+    eyebrow: "Know where you truly belong",
+    title: "See the opportunity behind the job description.",
+    description: "Sartho looks beyond keywords to understand the role, the recruiter’s real priorities, your strongest advantages and the gaps that deserve an honest decision.",
     badge: "Available now",
     visual: "match",
   },
   {
-    eyebrow: "Tailor without inventing",
-    title: "Change the résumé, never the truth.",
-    description: "Résumé Delta will show what to emphasise, move, rewrite or leave out — with the supporting evidence and reason visible before you approve anything.",
+    eyebrow: "Stand out without pretending",
+    title: "Tell the version of your story that deserves to be seen.",
+    description: "Résumé Delta will show what to emphasise, move, rewrite or leave out — always linked to evidence, always under your control and never based on invented claims.",
     badge: "Next release",
     visual: "resume",
   },
   {
-    eyebrow: "Prepare and stay in control",
-    title: "Practise the interview. Track every outcome.",
-    description: "Use your strongest evidence to answer likely questions, then follow recruiter messages, assessments, interviews, offers and next actions in one place.",
+    eyebrow: "Be ready when the moment arrives",
+    title: "Walk into every conversation with clarity and confidence.",
+    description: "Prepare for the questions that matter, use your strongest real examples and keep every recruiter conversation, interview and outcome connected in one purposeful journey.",
     badge: "Next release",
     visual: "journey",
   },
@@ -99,12 +99,12 @@ export default function WelcomePage() {
           ))}
         </div>
         <button type="button" className="primary-button" onClick={() => isLast ? finish() : setIndex((current) => current + 1)}>
-          {isLast ? "Enter Sartho" : "Next"}<span aria-hidden="true">→</span>
+          {isLast ? "Begin my journey" : "Next"}<span aria-hidden="true">→</span>
         </button>
       </footer>
 
-      <div className="journey-strip" aria-label="Sartho workflow">
-        {['Profile', 'Match', 'Tailor', 'Prepare', 'Track'].map((item, itemIndex) => (
+      <div className="journey-strip" aria-label="Sartho journey">
+        {['Discover', 'Align', 'Stand out', 'Prepare', 'Land it'].map((item, itemIndex) => (
           <div key={item} className={itemIndex <= index + 1 ? "is-active" : ""}>
             <span>{itemIndex + 1}</span><strong>{item}</strong>{itemIndex < 4 ? <i /> : null}
           </div>
