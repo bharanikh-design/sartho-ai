@@ -9,6 +9,7 @@ import "./onboarding-responsive.css";
 import "./shell-refinement.css";
 import "./account-and-journey.css";
 import "./workspace.css";
+import "./ai-workspace.css";
 import { AppShell } from "@/components/app-shell";
 
 export const metadata: Metadata = {
