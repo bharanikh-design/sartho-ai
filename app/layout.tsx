@@ -25,9 +25,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
+      <body>
         {/*
-          Applied before first paint so a light-mode user never sees a dark
+          Applied before the app paints so a light-mode user never sees a dark
           flash. Reads the saved choice, falling back to the OS preference.
         */}
         <script
@@ -35,8 +35,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             __html: `(function(){try{var t=localStorage.getItem("sartho-theme");if(!t){t=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();`,
           }}
         />
-      </head>
-      <body>
         <AppShell>{children}</AppShell>
       </body>
     </html>

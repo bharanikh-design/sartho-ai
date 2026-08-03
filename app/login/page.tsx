@@ -184,6 +184,54 @@ const styles = `
 
 .si :is(button, a, input):focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 
+/* ---- entry: you walk through the door ---------------------------------- */
+.si-splash {
+  position: fixed; inset: 0; z-index: 60;
+  display: grid; place-items: center;
+  background: #04050a;
+  cursor: pointer;
+  animation: splashOut .85s cubic-bezier(.6,.02,.28,1) 1.5s forwards;
+}
+.si-splash.is-skipping { animation: splashOut .5s cubic-bezier(.6,.02,.28,1) forwards; }
+
+/* the corridor floor running to the door */
+.si-splash-floor {
+  position: absolute; bottom: 0; left: 50%;
+  width: 150vw; height: 52vh;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--violet) 30%, transparent), transparent 62%);
+}
+/* the door itself */
+.si-splash-door {
+  position: relative;
+  width: min(19vw, 130px);
+  aspect-ratio: 5 / 9;
+  border-radius: 50% 50% 0 0 / 26% 26% 0 0;
+  background: linear-gradient(180deg, #ffffff, #d9e4ff 46%, #9fb6ff);
+  box-shadow:
+    0 0 70px 20px color-mix(in srgb, var(--violet) 55%, transparent),
+    0 0 190px 70px color-mix(in srgb, var(--blue) 34%, transparent);
+  animation: doorIn 1.5s cubic-bezier(.2,.7,.2,1) both, doorThrough .85s cubic-bezier(.6,.02,.28,1) 1.5s forwards;
+}
+.si-splash.is-skipping .si-splash-door { animation: doorThrough .5s cubic-bezier(.6,.02,.28,1) forwards; }
+
+.si-splash-word {
+  position: absolute; left: 50%; bottom: 13vh;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: siRise 1s ease .25s both;
+}
+.si-splash-word strong { display: block; font-size: clamp(22px, 2.6vw, 34px); font-weight: 650; letter-spacing: -0.03em; color: #f4f6ff; }
+.si-splash-word small { display: block; margin-top: 6px; font-size: 12.5px; color: rgba(226,232,255,.5); }
+.si-splash-skip {
+  position: absolute; right: 26px; bottom: 22px;
+  color: rgba(226,232,255,.34); font-size: 11.5px;
+}
+
+@keyframes doorIn { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes doorThrough { to { transform: scale(26); opacity: 0; } }
+@keyframes splashOut { to { opacity: 0; visibility: hidden; } }
+
 @keyframes siRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 940px) {
@@ -193,6 +241,7 @@ const styles = `
 }
 @media (prefers-reduced-motion: reduce) {
   .si * { animation: none !important; transition: none !important; }
+  .si-splash { display: none; }
 }
 `;
 
@@ -227,6 +276,26 @@ export default function LoginPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [splash, setSplash] = useState<"showing" | "skipping" | "done">("showing");
+
+  useEffect(() => {
+    // The door is a welcome, not a toll gate: it plays once per session, and
+    // never when the page is a landing from an OAuth round trip.
+    const returning =
+      window.sessionStorage.getItem("sartho-entered") === "1" ||
+      window.location.hash.length > 1 ||
+      window.location.search.length > 1;
+
+    if (returning) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSplash("done");
+      return;
+    }
+
+    window.sessionStorage.setItem("sartho-entered", "1");
+    const timer = window.setTimeout(() => setSplash("done"), 2350);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -245,6 +314,12 @@ export default function LoginPage() {
       if (data.session) router.replace("/");
     });
   }, [router, supabase]);
+
+  function walkThrough() {
+    if (splash !== "showing") return;
+    setSplash("skipping");
+    window.setTimeout(() => setSplash("done"), 500);
+  }
 
   async function signInWithProvider(provider: Provider) {
     setBusy(provider);
@@ -288,6 +363,22 @@ export default function LoginPage() {
   return (
     <main className="si">
       <style>{styles}</style>
+
+      {splash !== "done" ? (
+        <div
+          className={`si-splash${splash === "skipping" ? " is-skipping" : ""}`}
+          onClick={walkThrough}
+          role="presentation"
+        >
+          <div className="si-splash-floor" aria-hidden="true" />
+          <div className="si-splash-door" aria-hidden="true" />
+          <div className="si-splash-word">
+            <strong>Sartho</strong>
+            <small>Your Career CoPilot</small>
+          </div>
+          <span className="si-splash-skip">Click to enter</span>
+        </div>
+      ) : null}
 
       <header className="si-brand">
         <Image className="si-logo" src={sarthoIcon} alt="" width={46} height={46} priority />
