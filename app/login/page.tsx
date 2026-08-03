@@ -502,6 +502,9 @@ export default function LoginPage() {
     });
   }, [router, supabase]);
 
+  // While the entry screen is up, nothing behind it should be reachable.
+  const covered = splash !== "done";
+
   // The only way past the landing screen. Nothing else dismisses it.
   function walkThrough() {
     if (splash !== "showing") return;
@@ -574,7 +577,13 @@ export default function LoginPage() {
         </div>
       ) : null}
 
-      <header className="si-brand">
+      {/*
+        * Everything behind the entry screen is switched off while it is up.
+        * The sign-in form stays mounted underneath, so without this a keyboard
+        * user can Tab straight past Continue into provider buttons they cannot
+        * see, and a screen reader is handed both screens at once.
+        */}
+      <header className="si-brand" inert={covered}>
         <Image className="si-logo" src={sarthoIcon} alt="" width={184} height={184} quality={95} priority />
         <span>
           <strong>Sartho</strong>
@@ -582,7 +591,7 @@ export default function LoginPage() {
         </span>
       </header>
 
-      <div className="si-stage">
+      <div className="si-stage" inert={covered}>
         <section className="si-pitch">
           <h1>Your own headhunter. <em>Finally.</em></h1>
           <p>
