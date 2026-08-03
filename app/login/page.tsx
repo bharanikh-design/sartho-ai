@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import sarthoIcon from "@/sartho.png";
+import { entryArt } from "./entry-art";
 
 /*
  * Sign-in.
@@ -223,66 +224,60 @@ const styles = `
 /*
  * The corridor.
  *
- * A doorway only reads as a doorway when something leads to it. On its own,
- * an upright arch in the middle of a screen is just a shape, and people name
- * that shape unkindly. What makes it legible is perspective: a floor running
- * away from the viewer, converging on a vanishing point, with the opening
- * small and far off at the end of it and light spilling back down the floor.
- * The scale is the whole trick — the door has to be distant, not looming.
+ * This is the artwork itself, not a drawing of it — the lit doorway at the end
+ * of a floor running away to a vanishing point. A doorway only reads as a
+ * doorway when something leads to it; the perspective is the whole idea, and
+ * the opening is small because it is far away.
  *
  * Painted as a backdrop behind the words, never in the content flow, so it can
  * never crowd the headline or the button no matter the window.
  */
-.si-scene { position: absolute; inset: 0; pointer-events: none; }
-
-/* the floor: a triangle converging on the vanishing point, edges lit */
-.si-scene-road {
-  position: absolute; left: 50%; bottom: 0;
-  width: min(140vw, 1700px); height: 46vh;
-  transform: translateX(-50%);
-  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-  background: linear-gradient(to bottom,
-    rgba(206,182,255,.95), rgba(146,156,255,.55) 42%, rgba(100,120,230,.2) 78%, transparent 96%);
-  filter: drop-shadow(0 0 24px rgba(168,120,255,.58)) drop-shadow(0 0 74px rgba(96,132,255,.32));
-  animation: sceneIn 1.5s cubic-bezier(.2,.7,.2,1) .35s both;
+.si-scene {
+  position: absolute; left: 50%; top: 58%;
+  z-index: 0;
+  /*
+   * The whole frame, fitted to the height rather than cropped to fill. The
+   * artwork is 4:3 and a laptop window is closer to 2:1, so filling the frame
+   * ate the edges and enlarged the doorway until it loomed — precisely the
+   * quality that had to be designed out. Its own edges are already near-black,
+   * so masking them into the page reads as a lit scene in a dark room.
+   */
+  /*
+   * Sat low and a little under full height: the doorway falls near the top of
+   * the artwork, and at dead centre it collided with the last line of the
+   * headline on a short window.
+   */
+  height: 96%;
+  aspect-ratio: 2200 / 1675;
+  transform: translate(-50%, -50%);
+  /* the zoom on exit runs into the doorway, not the middle of the frame */
+  transform-origin: 50% 46%;
+  background-image: url("${entryArt}");
+  background-size: cover;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%);
+  pointer-events: none;
+  animation: sceneIn 1.6s ease .2s both;
 }
 /*
- * What sells the perspective is the two lit edges running away to the point,
- * not a filled wedge — filled, it reads as a pyramid standing up rather than a
- * floor lying down. A slightly inset triangle knocks the middle back out,
- * leaving the rim as the light and the surface as the room.
+ * The words sit on top of a photograph, so the top and bottom are pulled down
+ * to hold them. The middle is left alone — that is where the light is, and
+ * dimming it would be dimming the only thing worth looking at.
  */
-.si-scene-road::after {
+.si-splash::before {
   content: "";
   position: absolute; inset: 0;
-  clip-path: polygon(50% 2.4%, 98.1% 100%, 1.9% 100%);
-  background: linear-gradient(to bottom, rgba(4,5,10,.6), rgba(4,5,10,.93) 66%);
-}
-
-/* light thrown back out of the opening */
-.si-scene-rays {
-  position: absolute; left: 50%; bottom: 46vh;
-  width: min(62vw, 620px); aspect-ratio: 1;
-  transform: translate(-50%, 50%);
-  background: radial-gradient(circle,
-    rgba(226,236,255,.42), rgba(150,140,255,.2) 20%, rgba(110,120,240,.06) 40%, transparent 62%);
-  animation: sceneIn 1.8s ease .5s both, doorBreathe 5s ease-in-out 2s infinite;
-}
-
-/* the opening itself — small, distant, at the end of the floor */
-.si-scene-door {
-  position: absolute; left: 50%; bottom: 46vh;
-  width: clamp(20px, 2.3vh, 30px);
-  height: clamp(42px, 5vh, 66px);
-  transform: translateX(-50%);
-  border-radius: 999px 999px 0 0 / 58% 58% 0 0;
-  background: linear-gradient(180deg, #ffffff, #e6eeff 52%, #c3d4ff);
-  box-shadow: 0 0 26px 6px rgba(214,228,255,.75);
-  animation: doorArrive 1.2s cubic-bezier(.18,.72,.24,1) .55s both;
+  z-index: 1;
+  background: linear-gradient(to bottom,
+    rgba(4,5,10,.88) 0%, rgba(4,5,10,.5) 20%, rgba(4,5,10,.1) 42%,
+    rgba(4,5,10,.3) 66%, rgba(4,5,10,.92) 100%);
+  pointer-events: none;
 }
 
 .si-splash-line {
-  position: relative;
+  position: relative; z-index: 2;
   margin: 0;
   width: min(92vw, 14ch);
   text-align: center;
@@ -301,7 +296,7 @@ const styles = `
 
 /* brand lockup + the way in, together at the foot of the corridor */
 .si-splash-foot {
-  position: relative;
+  position: relative; z-index: 2;
   display: grid; justify-items: center; gap: 24px;
   animation: siRise 1.1s ease .62s both;
 }
@@ -331,6 +326,7 @@ const styles = `
 .si-splash::after {
   content: "";
   position: absolute; inset: 0;
+  z-index: 3;
   background: radial-gradient(circle at 50% 46%, #ffffff, rgba(214,226,255,.7) 34%, transparent 72%);
   opacity: 0;
   pointer-events: none;
@@ -343,43 +339,15 @@ const styles = `
  */
 .si-splash.is-leaving .si-splash-line { animation: lineThrough .8s cubic-bezier(.6,0,.75,.2) forwards; }
 .si-splash.is-leaving .si-splash-foot { animation: splashLift .4s ease forwards; }
-.si-splash.is-leaving .si-scene-door { animation: doorThrough .95s cubic-bezier(.7,0,.85,.2) forwards; }
-.si-splash.is-leaving .si-scene-rays { animation: sceneThrough .95s cubic-bezier(.7,0,.85,.2) forwards; }
-.si-splash.is-leaving .si-scene-road { animation: roadThrough .95s cubic-bezier(.7,0,.85,.2) forwards; }
+.si-splash.is-leaving .si-scene { animation: sceneThrough .95s cubic-bezier(.7,0,.85,.2) forwards; }
 
 /*
- * Light theme. The screen cannot simply stay black or the entry would flash
- * dark and then hand over to a white sign-in page.
+ * The landing screen stays dark in both themes. The artwork is a photograph of
+ * a lit doorway in an unlit room — there is no light-mode version of it, and
+ * laying light-mode type over it makes the words unreadable. The exit bloom
+ * washes to white, which is what carries a light-mode visitor across to the
+ * sign-in page rather than dropping them off a cliff.
  */
-:root[data-theme="light"] .si-splash { background: #f4f6fb; }
-:root[data-theme="light"] .si-splash-line { color: #0b0d16; }
-:root[data-theme="light"] .si-splash-line em { text-shadow: 0 0 52px rgba(124,92,240,.42); }
-/*
- * On a light field a white opening would disappear, so the corridor inverts:
- * the floor and the doorway carry the saturated violet and the room around
- * them stays bright.
- */
-:root[data-theme="light"] .si-scene-road {
-  background: linear-gradient(to bottom,
-    rgba(124,92,240,.85), rgba(91,127,240,.45) 42%, rgba(91,127,240,.14) 78%, transparent 96%);
-  filter: drop-shadow(0 0 22px rgba(124,92,240,.34)) drop-shadow(0 0 70px rgba(91,127,240,.2));
-}
-:root[data-theme="light"] .si-scene-road::after {
-  background: linear-gradient(to bottom, rgba(244,246,251,.72), rgba(244,246,251,.96) 66%);
-}
-:root[data-theme="light"] .si-scene-rays {
-  background: radial-gradient(circle,
-    rgba(124,92,240,.3), rgba(91,127,240,.14) 24%, rgba(91,127,240,.04) 44%, transparent 64%);
-}
-:root[data-theme="light"] .si-scene-door {
-  background: linear-gradient(180deg, #8f79ff, #6f8cff 54%, #a9bcff);
-  box-shadow: 0 0 24px 5px rgba(124,92,240,.5);
-}
-:root[data-theme="light"] .si-splash-lockup strong { color: #0b0d16; }
-:root[data-theme="light"] .si-splash-lockup small { color: #5b6278; }
-:root[data-theme="light"] .si-splash::after {
-  background: radial-gradient(circle at 50% 46%, #ffffff, rgba(226,232,255,.85) 34%, transparent 72%);
-}
 
 @keyframes splashLift { to { opacity: 0; transform: translateY(-10px); } }
 @keyframes lineThrough {
@@ -387,23 +355,9 @@ const styles = `
   100% { transform: scale(1.3); opacity: 0; filter: blur(7px); }
 }
 @keyframes sceneIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes doorArrive {
-  from { opacity: 0; transform: translateX(-50%) scaleY(.3); }
-  to   { opacity: 1; transform: translateX(-50%) scaleY(1); }
-}
-@keyframes doorBreathe { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.22); } }
-/* on the way out the corridor rushes at you — you go through the opening */
 @keyframes sceneThrough {
-  0%   { transform: translate(-50%, 50%) scale(1); opacity: 1; }
-  100% { transform: translate(-50%, 50%) scale(9); opacity: 0; }
-}
-@keyframes roadThrough {
-  0%   { transform: translateX(-50%) scale(1); opacity: 1; }
-  100% { transform: translateX(-50%) scale(2.6); opacity: 0; }
-}
-@keyframes doorThrough {
-  0%   { transform: translateX(-50%) scale(1); opacity: 1; }
-  100% { transform: translateX(-50%) scale(26); opacity: 0; filter: blur(10px); }
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(5.5); opacity: 0; }
 }
 @keyframes bloom {
   0%   { opacity: 0; }
@@ -594,11 +548,7 @@ export default function LoginPage() {
 
       {splash !== "done" ? (
         <div className={`si-splash${splash === "leaving" ? " is-leaving" : ""}`}>
-          <div className="si-scene" aria-hidden="true">
-            <div className="si-scene-road" />
-            <div className="si-scene-rays" />
-            <div className="si-scene-door" />
-          </div>
+          <div className="si-scene" aria-hidden="true" />
           <h1 className="si-splash-line">
             Your own headhunter. <em>Finally.</em>
           </h1>
