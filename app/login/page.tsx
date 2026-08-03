@@ -382,7 +382,7 @@ export default function LoginPage() {
       ) : null}
 
       <header className="si-brand">
-        <Image className="si-logo" src={sarthoIcon} alt="" width={46} height={46} priority />
+        <Image className="si-logo" src={sarthoIcon} alt="" width={184} height={184} quality={95} priority />
         <span>
           <strong>Sartho</strong>
           <small>Your Career CoPilot</small>
