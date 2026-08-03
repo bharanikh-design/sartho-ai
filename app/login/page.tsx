@@ -1,9 +1,7 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import sarthoIcon from "@/sartho.png";
 import { createClient } from "@/lib/supabase";
 
 /*
@@ -20,210 +18,93 @@ import { createClient } from "@/lib/supabase";
  * Styles are inlined so this page can be deployed as a single file.
  */
 const styles = `
-.signin {
-  --accent: #a68cff;
-  --accent-deep: #6f8cf5;
+.hh {
   position: relative;
-  width: min(100%, 1280px);
   min-height: 100vh;
   min-height: 100dvh;
-  margin: 0 auto;
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: clamp(24px, 4vw, 44px);
-  padding: clamp(22px, 4vw, 56px);
-  color: var(--text, #f7f8fb);
-  isolation: isolate;
-}
-
-/* A single cool wash, low and slow — depth without noise. */
-.signin::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: -18%; left: 42%;
-  width: min(70vw, 780px); aspect-ratio: 1;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(139,124,246,.16), transparent 62%);
-  filter: blur(28px);
-  animation: drift 26s ease-in-out infinite alternate;
-}
-
-/* Masthead */
-.signin-top { display: flex; align-items: center; gap: 13px; animation: rise .6s ease both; }
-.signin-logo { width: 46px; height: 46px; border-radius: 13px; }
-.signin-top strong { display: block; font-size: 17px; font-weight: 650; letter-spacing: -0.02em; }
-.signin-top small {
-  display: block; margin-top: 3px;
-  font-size: 12.5px; letter-spacing: .005em;
-  color: var(--text-tertiary, rgba(239,242,249,.48));
-}
-
-/* Stage */
-.signin-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(350px, .78fr);
-  gap: clamp(36px, 6vw, 84px);
-  align-items: center;
-}
-
-.signin-intro h1 {
-  margin: 0;
-  max-width: 13ch;
-  font-size: clamp(36px, 4.9vw, 60px);
-  line-height: 1.03;
-  letter-spacing: -0.036em;
-  font-weight: 640;
-  text-wrap: balance;
-  animation: rise .7s ease .06s both;
-}
-.signin-intro h1 em {
-  font-style: normal;
-  background: linear-gradient(100deg, #b6a4ff, #cfc4ff 50%, #7f9cf7);
-  -webkit-background-clip: text; background-clip: text;
-  color: transparent;
-}
-
-/* Journey strip — cycles so the page has a pulse */
-.signin-stages {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
-  margin-top: clamp(30px, 3.4vw, 42px);
-  animation: rise .7s ease .14s both;
-}
-.signin-stages span {
-  position: relative;
-  display: inline-flex; align-items: center; min-height: 34px;
-  padding: 0 14px;
-  border: 1px solid var(--line, rgba(255,255,255,.1));
-  border-radius: 999px;
-  background: rgba(255,255,255,.03);
-  color: var(--text-tertiary, rgba(239,242,249,.46));
-  font-size: 12.5px; font-weight: 600;
-  animation: stageOn 11s linear infinite;
-  animation-delay: calc(var(--i) * 2.2s);
-}
-.signin-stages i {
-  position: relative;
-  width: 20px; height: 1px;
-  background: rgba(255,255,255,.12);
+  grid-template-rows: auto 1fr;
+  gap: clamp(20px, 3vw, 30px);
+  padding: clamp(22px, 3.4vw, 46px);
   overflow: hidden;
+  color: var(--text, #f4f6ff);
 }
-.signin-stages i::after {
+/* One pool of light, following the theme. */
+.hh::before {
   content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, var(--accent-deep), var(--accent));
-  transform: scaleX(0); transform-origin: left;
-  animation: linkOn 11s linear infinite;
-  animation-delay: calc(var(--i) * 2.2s);
+  position: absolute; z-index: 0;
+  top: -34%; left: 8%;
+  width: min(78vw, 900px); aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--violet, #a68cff) 22%, transparent), transparent 62%);
+  filter: blur(40px);
+  pointer-events: none;
 }
 
-/* Card */
-.signin-card {
-  justify-self: end;
+.hh-top, .hh-stage { position: relative; z-index: 2; }
+.hh-top { display: flex; align-items: baseline; gap: 11px; animation: rise .8s ease both; }
+.hh-top strong { font-size: 15px; font-weight: 600; }
+.hh-top span { font-size: 12.5px; color: var(--text-tertiary); }
+
+.hh-stage {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: clamp(34px, 4.6vw, 56px);
   width: 100%;
-  max-width: 410px;
-  padding: clamp(26px, 3vw, 34px);
-  border: 1px solid var(--line, rgba(255,255,255,.1));
-  border-radius: 24px;
-  background: var(--glass-strong, rgba(16,20,29,.82));
-  box-shadow: 0 26px 74px rgba(0,0,0,.4);
-  backdrop-filter: blur(18px);
-  animation: rise .7s ease .2s both;
 }
-.signin-card h2 {
+
+.hh-stage h1 {
+  max-width: 13ch;
   margin: 0;
-  font-size: 23px; line-height: 1.15;
-  letter-spacing: -0.028em; font-weight: 640;
+  font-size: clamp(46px, 10vw, 152px);
+  line-height: .9;
+  letter-spacing: -0.058em;
+  font-weight: 600;
+  text-wrap: balance;
+  animation: rise 1.2s cubic-bezier(.2,.7,.2,1) .15s both;
+}
+.hh-stage h1 em {
+  font-style: normal;
+  color: var(--text);
+  text-shadow: 0 0 54px color-mix(in srgb, var(--violet, #a68cff) 55%, transparent);
 }
 
-.signin-google {
-  width: 100%; min-height: 52px;
-  display: flex; align-items: center; justify-content: center; gap: 11px;
-  margin-top: 22px;
-  border: 1px solid rgba(166,140,255,.3);
-  border-radius: 14px;
-  color: #f8f9fc;
-  background: rgba(166,140,255,.08);
+.hh-act { display: grid; justify-items: center; gap: 14px; animation: rise 1s ease .8s both; }
+.hh-cta {
+  min-height: 54px;
+  display: inline-flex; align-items: center; gap: 11px;
+  padding: 0 28px;
+  border: 1px solid var(--line-bright);
+  border-radius: 999px;
+  color: var(--canvas);
+  background: var(--text);
   cursor: pointer; font: inherit;
-  font-size: 15px; font-weight: 600;
-  transition: background .22s ease, border-color .22s ease, transform .22s ease, box-shadow .22s ease;
+  font-size: 15px; font-weight: 600; letter-spacing: -0.008em;
+  box-shadow: var(--shadow-soft);
+  transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease;
 }
-.signin-google:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: rgba(166,140,255,.5);
-  background: rgba(166,140,255,.14);
-  box-shadow: 0 10px 30px rgba(124,108,240,.22);
-}
-.signin-google:disabled { opacity: .6; cursor: progress; }
-.signin-google svg { flex: none; }
+.hh-cta:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow); }
+.hh-cta:disabled { opacity: .6; cursor: progress; }
+.hh-note { margin: 0; color: var(--text-tertiary); font-size: 12.5px; }
+.hh-error { max-width: 46ch; margin: 0; color: var(--rose); font-size: 13px; line-height: 1.55; }
 
-.signin-note {
-  margin: 15px 0 0;
-  color: var(--text-tertiary, rgba(239,242,249,.44));
-  font-size: 12.5px; text-align: center;
-}
-.signin-error {
-  margin: 18px 0 0; padding: 12px 14px;
-  border: 1px solid rgba(255,142,163,.24);
-  border-radius: 12px;
-  color: #ffc2ce; background: rgba(255,142,163,.08);
-  font-size: 13px; line-height: 1.55;
+.hh :is(button, a):focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
 }
 
-.signin-foot {
-  display: flex; align-items: center; gap: 8px;
-  color: var(--text-tertiary, rgba(239,242,249,.44));
-  font-size: 12.5px;
-  animation: rise .7s ease .26s both;
-}
-.signin-foot i {
-  width: 6px; height: 6px; border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 0 10px rgba(166,140,255,.75);
-}
-
-.signin :is(button, a):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-
-@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-@keyframes drift { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(-4%, 3%, 0) scale(1.08); } }
-@keyframes stageOn {
-  0%, 18%, 100% {
-    border-color: var(--line, rgba(255,255,255,.1));
-    background: rgba(255,255,255,.03);
-    color: var(--text-tertiary, rgba(239,242,249,.46));
-  }
-  3%, 15% {
-    border-color: rgba(166,140,255,.45);
-    background: rgba(166,140,255,.14);
-    color: #ded6ff;
-  }
-}
-@keyframes linkOn {
-  0%, 100% { transform: scaleX(0); }
-  4% { transform: scaleX(0); }
-  15%, 82% { transform: scaleX(1); }
-}
-
-@media (max-width: 940px) {
-  .signin-grid { grid-template-columns: 1fr; gap: 30px; align-items: start; }
-  .signin-card { justify-self: stretch; max-width: none; }
-  .signin-intro h1 { max-width: none; font-size: clamp(33px, 7.4vw, 48px); }
-}
-@media (max-width: 560px) {
-  .signin { gap: 20px; }
-  .signin-stages i { display: none; }
+@media (max-width: 700px) {
+  .hh-stage { gap: 26px; }
+  .hh-stage h1 { font-size: clamp(38px, 12vw, 62px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .signin *, .signin::before { animation: none !important; transition: none !important; }
-  .signin-stages span:first-child {
-    border-color: rgba(166,140,255,.45);
-    background: rgba(166,140,255,.14);
-    color: #ded6ff;
-  }
+  .hh * { animation: none !important; transition: none !important; }
 }
 `;
-
-const stages = ["Discover", "Align", "Stand out", "Prepare", "Land it"];
 
 function friendlyAuthMessage(message: string) {
   const value = message.toLowerCase();
@@ -289,49 +170,27 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="signin">
+    <main className="hh">
       <style>{styles}</style>
 
-      <header className="signin-top">
-        <Image className="signin-logo" src={sarthoIcon} alt="" width={46} height={46} priority />
-        <span>
-          <strong>Sartho</strong>
-          <small>Your career, intelligently guided.</small>
-        </span>
+      <header className="hh-top">
+        <strong>Sartho</strong>
+        <span>Career representation</span>
       </header>
 
-      <div className="signin-grid">
-        <section className="signin-intro">
-          <h1>Find work <em>worthy</em> of your experience.</h1>
+      <div className="hh-stage">
+        <h1>Your own headhunter. <em>Finally.</em></h1>
 
-          <div className="signin-stages" aria-label="How Sartho works">
-            {stages.map((stage, index) => (
-              <Fragment key={stage}>
-                {index > 0 ? <i style={{ ["--i" as string]: index - 1 }} aria-hidden="true" /> : null}
-                <span style={{ ["--i" as string]: index }}>{stage}</span>
-              </Fragment>
-            ))}
-          </div>
-        </section>
-
-        <section className="signin-card">
-          <h2>Welcome to Sartho</h2>
-
-          <button type="button" className="signin-google" onClick={signInWithGoogle} disabled={busy}>
+        <div className="hh-act">
+          <button type="button" className="hh-cta" onClick={signInWithGoogle} disabled={busy}>
             <GoogleIcon />
-            <span>{busy ? "Connecting…" : "Continue with Google"}</span>
+            <span>{busy ? "Opening…" : "Continue with Google"}</span>
           </button>
+          <p className="hh-note">Private beta — approved accounts only.</p>
+        </div>
 
-          {message ? <p className="signin-error" role="alert">{message}</p> : null}
-
-          <p className="signin-note">Private beta — approved accounts only.</p>
-        </section>
+        {message ? <p className="hh-error" role="alert">{message}</p> : null}
       </div>
-
-      <footer className="signin-foot">
-        <i aria-hidden="true" />
-        <span>Nothing is submitted without your approval.</span>
-      </footer>
     </main>
   );
 }
