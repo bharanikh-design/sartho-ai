@@ -212,10 +212,15 @@ const styles = `
 .si-splash {
   position: fixed; inset: 0; z-index: 60;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: space-between;
-  /* a floor under the spacing, so space-between can never collapse to nothing */
-  gap: clamp(16px, 3.4vh, 48px);
-  padding: clamp(32px, 8vh, 110px) 24px clamp(28px, 7vh, 92px);
+  align-items: center; justify-content: center;
+  /*
+   * Centred as one composition rather than space-between. Pushed to the edges
+   * the headline, the door and the way in read as three separate islands with
+   * dead air between them, and the arrangement changes shape with every window
+   * size. Held together they stay one object.
+   */
+  gap: clamp(20px, 4.2vh, 54px);
+  padding: clamp(28px, 6vh, 72px) 24px clamp(28px, 6vh, 72px);
   background: #04050a;
   overflow: hidden;
 }
@@ -449,6 +454,36 @@ export default function LoginPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (returning) setSplash("done");
   }, []);
+
+  useEffect(() => {
+    if (splash === "done") return;
+
+    /*
+     * The landing screen covers the viewport, but the sign-in page underneath
+     * is taller than a short window and stays scrollable — which puts a
+     * scrollbar down the side of a full-bleed screen and lets the wheel drag
+     * the hidden page around. Locking the body removes the scrollbar, so its
+     * width is handed back as padding to stop the page shifting sideways.
+     */
+    const root = document.documentElement;
+    const body = document.body;
+    const scrollbar = window.innerWidth - root.clientWidth;
+    const previousRootOverflow = root.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    const previousPadding = body.style.paddingRight;
+
+    // Both elements: overflow on body alone stops the wheel but leaves the
+    // viewport scrollbar drawn, because that scrollbar belongs to the root.
+    root.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    if (scrollbar > 0) body.style.paddingRight = `${scrollbar}px`;
+
+    return () => {
+      root.style.overflow = previousRootOverflow;
+      body.style.overflow = previousBodyOverflow;
+      body.style.paddingRight = previousPadding;
+    };
+  }, [splash]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
