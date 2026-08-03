@@ -197,7 +197,7 @@ const styles = `
 
 .si :is(button, a, input):focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 
-/* ---- the landing screen: the door waits for you ------------------------- */
+/* ---- the landing screen -------------------------------------------------- */
 /*
  * This is a screen, not a transition. It arrives, it settles, and then it
  * holds — indefinitely — until the visitor presses Continue. Nothing here is
@@ -214,10 +214,9 @@ const styles = `
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   /*
-   * Centred as one composition rather than space-between. Pushed to the edges
-   * the headline, the door and the way in read as three separate islands with
-   * dead air between them, and the arrangement changes shape with every window
-   * size. Held together they stay one object.
+   * Centred as one composition rather than space-between, which flung the
+   * headline and the way in to opposite edges with dead air between them and
+   * changed shape with every window size. Held together they stay one object.
    */
   gap: clamp(20px, 4.2vh, 54px);
   padding: clamp(28px, 6vh, 72px) 24px clamp(28px, 6vh, 72px);
@@ -226,7 +225,7 @@ const styles = `
 }
 .si-splash.is-leaving { animation: splashOut .6s ease .38s forwards; }
 
-/* the corridor floor running to the door */
+/* an ambient wash behind the words, keeping the field from going flat */
 .si-splash-floor {
   position: absolute; bottom: -12vh; left: 50%;
   width: 150vw; height: 64vh;
@@ -236,49 +235,18 @@ const styles = `
   filter: blur(30px);
   pointer-events: none;
 }
-/* the door itself */
 /*
- * Sized off the viewport HEIGHT, not the width. Driven by width alone it kept
- * a fixed 234px height, so on a short window it grew into both its neighbours
- * and the spacing between them collapsed to zero. It also shrinks below its
- * preferred height rather than pushing anything off the screen.
+ * There is deliberately no illustration here. A glowing arch was standing in
+ * the middle of this screen reading as a doorway, which is a meaning it only
+ * carried for whoever drew it — to everyone else it was a shape. The sentence
+ * is the idea, so the sentence is the image.
  */
-.si-splash-door {
-  position: relative;
-  height: min(234px, 30vh);
-  width: auto;
-  flex: 0 1 auto;
-  min-height: 84px;
-  aspect-ratio: 5 / 9;
-  border-radius: 50% 50% 0 0 / 26% 26% 0 0;
-  background: linear-gradient(180deg, #ffffff, #d9e4ff 46%, #9fb6ff);
-  /* breathes on a loop while it waits — alive, not frozen */
-  animation:
-    doorIn .9s cubic-bezier(.18,.72,.24,1) both,
-    doorGlow 4.2s ease-in-out .9s infinite;
-}
-/*
- * The halo is a gradient rather than a pair of very large box-shadows: at these
- * radii Chromium tiles the shadow blur and the tile edges show as banding.
- */
-.si-splash-door::before {
-  content: "";
-  position: absolute; left: 50%; top: 50%;
-  width: 640px; height: 640px;
-  margin: -320px 0 0 -320px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle, rgba(190,205,255,.55), rgba(140,120,250,.28) 30%, transparent 62%);
-  pointer-events: none;
-}
-
-/* headline sits above the door, the promise you are walking towards */
 .si-splash-line {
   position: relative;
   margin: 0;
-  width: min(92vw, 15ch);
+  width: min(92vw, 14ch);
   text-align: center;
-  font-size: clamp(30px, 5.2vw, 68px);
+  font-size: clamp(34px, 6.4vw, 92px);
   line-height: .96;
   letter-spacing: -0.05em;
   font-weight: 600;
@@ -297,10 +265,10 @@ const styles = `
   display: grid; justify-items: center; gap: 24px;
   animation: siRise 1.1s ease .62s both;
 }
-.si-splash-lockup { display: flex; align-items: center; gap: 11px; }
-.si-splash-lockup img { width: 38px; height: 38px; border-radius: 11px; flex: none; }
-.si-splash-lockup strong { display: block; font-size: 18px; font-weight: 650; letter-spacing: -0.028em; color: #f4f6ff; }
-.si-splash-lockup small { display: block; margin-top: 2px; font-size: 12px; color: rgba(226,232,255,.5); }
+.si-splash-lockup { display: flex; align-items: center; gap: 12px; }
+.si-splash-lockup img { width: 46px; height: 46px; border-radius: 13px; flex: none; }
+.si-splash-lockup strong { display: block; font-size: 21px; font-weight: 650; letter-spacing: -0.028em; color: #f4f6ff; }
+.si-splash-lockup small { display: block; margin-top: 3px; font-size: 12.5px; color: rgba(226,232,255,.5); }
 
 .si-splash-enter {
   min-height: 50px;
@@ -329,25 +297,21 @@ const styles = `
 }
 .si-splash.is-leaving::after { animation: bloom .9s ease-out .1s forwards; }
 
-/* on the way out, the words and the button clear so the door can take over */
-.si-splash.is-leaving .si-splash-line,
-.si-splash.is-leaving .si-splash-foot { animation: splashLift .38s ease forwards; }
+/*
+ * The exit. With no shape to pull you through, the sentence itself is what
+ * moves: it presses forward and dissolves as the light washes over it, and the
+ * lockup and button drop away underneath.
+ */
+.si-splash.is-leaving .si-splash-line { animation: lineThrough .82s cubic-bezier(.6,0,.75,.2) forwards; }
+.si-splash.is-leaving .si-splash-foot { animation: splashLift .4s ease forwards; }
 
 /*
- * Light theme. The corridor cannot simply stay black or the entry would flash
- * dark and then hand over to a white sign-in screen. On a light field a glowing
- * white door would vanish, so the aperture inverts: the opening becomes the
- * saturated violet and the room around it goes bright.
+ * Light theme. The screen cannot simply stay black or the entry would flash
+ * dark and then hand over to a white sign-in page.
  */
 :root[data-theme="light"] .si-splash { background: #f4f6fb; }
 :root[data-theme="light"] .si-splash-line { color: #0b0d16; }
 :root[data-theme="light"] .si-splash-line em { text-shadow: 0 0 52px rgba(124,92,240,.42); }
-:root[data-theme="light"] .si-splash-door {
-  background: linear-gradient(180deg, #8f79ff, #6f8cff 52%, #aebfff);
-}
-:root[data-theme="light"] .si-splash-door::before {
-  background: radial-gradient(circle, rgba(124,92,240,.4), rgba(91,127,240,.18) 32%, transparent 62%);
-}
 :root[data-theme="light"] .si-splash-floor {
   background: radial-gradient(ellipse at 50% 22%, color-mix(in srgb, var(--violet) 22%, transparent), transparent 58%);
 }
@@ -357,13 +321,10 @@ const styles = `
   background: radial-gradient(circle at 50% 46%, #ffffff, rgba(226,232,255,.85) 34%, transparent 72%);
 }
 
-@keyframes doorIn { from { transform: scale(.62); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes doorGlow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.16); } }
 @keyframes splashLift { to { opacity: 0; transform: translateY(-10px); } }
-@keyframes doorThrough {
-  0%   { transform: scale(1); filter: blur(0); }
-  55%  { transform: scale(5.5); filter: blur(2px); }
-  100% { transform: scale(34); filter: blur(16px); opacity: .6; }
+@keyframes lineThrough {
+  0%   { transform: scale(1); opacity: 1; filter: blur(0); }
+  100% { transform: scale(1.3); opacity: 0; filter: blur(7px); }
 }
 @keyframes bloom {
   0%   { opacity: 0; }
@@ -379,23 +340,21 @@ const styles = `
   .si-panel { justify-self: stretch; }
   .si-pitch h1 { max-width: none; font-size: clamp(34px, 8vw, 52px); }
   .si-splash { padding: clamp(32px, 7vh, 72px) 22px clamp(28px, 6vh, 64px); }
-  .si-splash-door::before { width: 420px; height: 420px; margin: -210px 0 0 -210px; }
   .si-splash-foot { gap: 20px; }
 }
 /*
- * Short windows — a laptop with the browser chrome and a taskbar eating the
- * screen. The headline has to come down with everything else or it takes the
- * room the door and the button need.
+ * Short windows — a laptop with browser chrome and a taskbar taking their cut.
+ * The headline comes down with everything else so it never crowds the way in.
  */
 @media (max-height: 720px) {
-  .si-splash-line { font-size: clamp(24px, 3.8vw, 44px); }
-  .si-splash-lockup img { width: 32px; height: 32px; }
-  .si-splash-foot { gap: 16px; }
-  .si-splash-enter { min-height: 44px; font-size: 13.5px; }
+  .si-splash-line { font-size: clamp(28px, 5vw, 62px); }
+  .si-splash-foot { gap: 18px; }
+  .si-splash-enter { min-height: 46px; }
 }
 @media (max-height: 560px) {
-  .si-splash-line { font-size: clamp(21px, 3.2vw, 32px); }
-  .si-splash-door::before { width: 360px; height: 360px; margin: -180px 0 0 -180px; }
+  .si-splash-line { font-size: clamp(24px, 4vw, 46px); }
+  .si-splash-lockup img { width: 34px; height: 34px; }
+  .si-splash-foot { gap: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   /*
@@ -560,7 +519,6 @@ export default function LoginPage() {
           <h1 className="si-splash-line">
             Your own headhunter. <em>Finally.</em>
           </h1>
-          <div className="si-splash-door" aria-hidden="true" />
           <div className="si-splash-foot">
             <span className="si-splash-lockup">
               <Image src={sarthoIcon} alt="" width={152} height={152} quality={95} priority />
