@@ -1,108 +1,198 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
+import sarthoIcon from "@/sartho.png";
 
 /*
- * Sign-in — the product's front door.
+ * Sign-in.
  *
- * Restrained violet on near-black, aligned to the app's existing tokens. Applied
- * sparingly (mark, active stage, focus, CTA) so it reads considered
- * rather than gaudy. The journey strip animates through the five stages so the
- * page feels alive without a carousel's weight.
+ * Split composition: the promise holds the left, every way in sits on the
+ * right. The brand lockup stays whole — mark, wordmark and tagline together —
+ * because the front door is where identity should be most complete, not least.
  *
- * Copy is deliberately sparse — the tagline sits with the mark, the headline is
- * one line, and the card says only what the moment needs.
- *
- * Styles are inlined so this page can be deployed as a single file.
+ * Styling runs on the shared design tokens, so the page follows the Dark/Light
+ * switch along with the rest of the product.
  */
+
+type Provider = "google" | "apple" | "github";
+type Mode = "signin" | "reset";
+
 const styles = `
-.hh {
+.si {
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: clamp(20px, 3vw, 30px);
-  padding: clamp(22px, 3.4vw, 46px);
+  gap: clamp(22px, 3vw, 38px);
+  padding: clamp(22px, 3.2vw, 46px);
+  color: var(--text);
   overflow: hidden;
-  color: var(--text, #f4f6ff);
 }
-/* One pool of light, following the theme. */
-.hh::before {
+.si::before {
   content: "";
   position: absolute; z-index: 0;
-  top: -34%; left: 8%;
-  width: min(78vw, 900px); aspect-ratio: 1;
+  top: -32%; left: 4%;
+  width: min(72vw, 820px); aspect-ratio: 1;
   border-radius: 999px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--violet, #a68cff) 22%, transparent), transparent 62%);
-  filter: blur(40px);
+  background: radial-gradient(circle, color-mix(in srgb, var(--violet) 20%, transparent), transparent 64%);
+  filter: blur(44px);
   pointer-events: none;
 }
 
-.hh-top, .hh-stage { position: relative; z-index: 2; }
-.hh-top { display: flex; align-items: baseline; gap: 11px; animation: rise .8s ease both; }
-.hh-top strong { font-size: 15px; font-weight: 600; }
-.hh-top span { font-size: 12.5px; color: var(--text-tertiary); }
+/* Brand lockup — kept whole. */
+.si-brand {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 13px;
+  animation: siRise .8s ease both;
+}
+.si-logo { width: 46px; height: 46px; border-radius: 13px; flex: none; }
+.si-brand strong { display: block; font-size: 21px; font-weight: 650; letter-spacing: -0.028em; }
+.si-brand small { display: block; margin-top: 3px; font-size: 12.5px; color: var(--text-tertiary); }
 
-.hh-stage {
+/* Stage */
+.si-stage {
+  position: relative; z-index: 2;
   display: grid;
-  align-content: center;
-  justify-items: center;
-  text-align: center;
-  gap: clamp(34px, 4.6vw, 56px);
-  width: 100%;
+  grid-template-columns: minmax(0, 1.06fr) minmax(340px, 430px);
+  gap: clamp(38px, 6vw, 90px);
+  align-items: center;
 }
 
-.hh-stage h1 {
-  max-width: 13ch;
+.si-pitch h1 {
+  max-width: 12ch;
   margin: 0;
-  font-size: clamp(46px, 10vw, 152px);
-  line-height: .9;
-  letter-spacing: -0.058em;
+  font-size: clamp(40px, 6.4vw, 92px);
+  line-height: .94;
+  letter-spacing: -0.05em;
   font-weight: 600;
   text-wrap: balance;
-  animation: rise 1.2s cubic-bezier(.2,.7,.2,1) .15s both;
+  animation: siRise 1s cubic-bezier(.2,.7,.2,1) .08s both;
 }
-.hh-stage h1 em {
+.si-pitch h1 em {
   font-style: normal;
-  color: var(--text);
-  text-shadow: 0 0 54px color-mix(in srgb, var(--violet, #a68cff) 55%, transparent);
+  text-shadow: 0 0 60px color-mix(in srgb, var(--violet) 50%, transparent);
+}
+.si-pitch p {
+  max-width: 40ch;
+  margin: clamp(18px, 2vw, 26px) 0 0;
+  color: var(--text-secondary);
+  font-size: clamp(15px, 1.3vw, 17px);
+  line-height: 1.6;
+  animation: siRise 1s ease .18s both;
 }
 
-.hh-act { display: grid; justify-items: center; gap: 14px; animation: rise 1s ease .8s both; }
-.hh-cta {
-  min-height: 54px;
-  display: inline-flex; align-items: center; gap: 11px;
-  padding: 0 28px;
+/* Panel */
+.si-panel {
+  justify-self: end;
+  width: 100%;
+  padding: clamp(24px, 2.6vw, 34px);
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: var(--glass-strong);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+  animation: siRise 1s ease .26s both;
+}
+.si-panel h2 { margin: 0; font-size: 20px; font-weight: 640; letter-spacing: -0.026em; }
+.si-sub { margin: 7px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+
+.si-providers { display: grid; gap: 9px; margin-top: 20px; }
+.si-provider {
+  width: 100%; min-height: 48px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
   border: 1px solid var(--line-bright);
-  border-radius: 999px;
-  color: var(--canvas);
-  background: var(--text);
+  border-radius: 13px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
   cursor: pointer; font: inherit;
-  font-size: 15px; font-weight: 600; letter-spacing: -0.008em;
-  box-shadow: var(--shadow-soft);
-  transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease;
+  font-size: 14px; font-weight: 560;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
 }
-.hh-cta:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow); }
-.hh-cta:disabled { opacity: .6; cursor: progress; }
-.hh-note { margin: 0; color: var(--text-tertiary); font-size: 12.5px; }
-.hh-error { max-width: 46ch; margin: 0; color: var(--rose); font-size: 13px; line-height: 1.55; }
+.si-provider:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--text) 28%, transparent);
+  background: color-mix(in srgb, var(--text) 9%, transparent);
+}
+.si-provider:disabled { opacity: .55; cursor: progress; }
+.si-provider svg { flex: none; }
 
-.hh :is(button, a):focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+.si-or {
+  display: flex; align-items: center; gap: 12px;
+  margin: 18px 0;
+  color: var(--text-tertiary); font-size: 11.5px;
+}
+.si-or::before, .si-or::after { content: ""; height: 1px; flex: 1; background: var(--line); }
 
-@keyframes rise {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: none; }
+.si-form { display: grid; gap: 11px; }
+.si-form label { display: grid; gap: 6px; }
+.si-form label > span { font-size: 12px; font-weight: 560; color: var(--text-secondary); }
+.si-form input {
+  width: 100%; min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid var(--line-bright);
+  border-radius: 12px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--canvas) 55%, transparent);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.si-form input::placeholder { color: var(--text-tertiary); }
+.si-form input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 18%, transparent);
 }
 
-@media (max-width: 700px) {
-  .hh-stage { gap: 26px; }
-  .hh-stage h1 { font-size: clamp(38px, 12vw, 62px); }
+.si-submit {
+  width: 100%; min-height: 48px;
+  margin-top: 3px;
+  border: 0; border-radius: 13px;
+  color: var(--canvas); background: var(--text);
+  cursor: pointer; font: inherit;
+  font-size: 14px; font-weight: 620;
+  transition: transform .2s ease, opacity .2s ease;
+}
+.si-submit:hover:not(:disabled) { transform: translateY(-1px); }
+.si-submit:disabled { opacity: .55; cursor: progress; }
+
+.si-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 13px; }
+.si-link {
+  border: 0; padding: 0; background: none;
+  color: var(--blue); cursor: pointer; font: inherit;
+  font-size: 12.5px;
+}
+.si-link:hover { text-decoration: underline; }
+
+.si-msg {
+  margin: 14px 0 0; padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 12.5px; line-height: 1.5;
+}
+.si-msg.is-error { border-color: color-mix(in srgb, var(--rose) 40%, transparent); color: var(--rose); background: color-mix(in srgb, var(--rose) 10%, transparent); }
+.si-msg.is-ok { border-color: color-mix(in srgb, var(--mint) 40%, transparent); color: var(--mint); background: color-mix(in srgb, var(--mint) 10%, transparent); }
+
+.si-note {
+  margin: 16px 0 0; padding-top: 15px;
+  border-top: 1px solid var(--line);
+  color: var(--text-tertiary); font-size: 11.5px; line-height: 1.55; text-align: center;
+}
+
+.si :is(button, a, input):focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+@keyframes siRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 940px) {
+  .si-stage { grid-template-columns: 1fr; gap: 30px; align-items: start; }
+  .si-panel { justify-self: stretch; }
+  .si-pitch h1 { max-width: none; font-size: clamp(34px, 8vw, 52px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hh * { animation: none !important; transition: none !important; }
+  .si * { animation: none !important; transition: none !important; }
 }
 `;
 
@@ -114,7 +204,7 @@ function friendlyAuthMessage(message: string) {
   }
 
   if (value.includes("unsupported provider") || value.includes("provider is not enabled")) {
-    return "Google sign-in has not been enabled for Sartho yet. Complete the one-time Google connection in Supabase, then try again.";
+    return "That sign-in method has not been switched on for Sartho yet. Enable it in Supabase, then try again.";
   }
 
   if (
@@ -122,7 +212,7 @@ function friendlyAuthMessage(message: string) {
     value.includes("invalid_client") ||
     value.includes("client secret")
   ) {
-    return "Google accepted your account, but Supabase could not complete the secure code exchange. The Google Client Secret saved in Supabase does not match this Client ID.";
+    return "The provider accepted your account, but Supabase could not complete the secure code exchange. The client secret saved in Supabase does not match this client ID.";
   }
 
   return message;
@@ -131,13 +221,17 @@ function friendlyAuthMessage(message: string) {
 export default function LoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [mode, setMode] = useState<Mode>("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    const error =
+    const failure =
       hashParams.get("error_description") ??
       searchParams.get("error") ??
       hashParams.get("error");
@@ -145,51 +239,156 @@ export default function LoginPage() {
     // Reads browser-only URL/hash params unavailable during SSR, so this must
     // run in an effect rather than being derived during render.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (error) setMessage(friendlyAuthMessage(error));
+    if (failure) setError(friendlyAuthMessage(failure));
 
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace("/");
     });
   }, [router, supabase]);
 
-  async function signInWithGoogle() {
-    setBusy(true);
-    setMessage(null);
+  async function signInWithProvider(provider: Provider) {
+    setBusy(provider);
+    setError(null);
+    setNotice(null);
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/`,
-      },
+    const { error: failure } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/` },
     });
 
-    if (error) {
-      setBusy(false);
-      setMessage(friendlyAuthMessage(error.message));
+    if (failure) {
+      setBusy(null);
+      setError(friendlyAuthMessage(failure.message));
     }
   }
 
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setNotice(null);
+
+    if (mode === "reset") {
+      setBusy("reset");
+      const { error: failure } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/`,
+      });
+      setBusy(null);
+      if (failure) setError(friendlyAuthMessage(failure.message));
+      else setNotice("If that address has an account, a reset link is on its way.");
+      return;
+    }
+
+    setBusy("email");
+    const { error: failure } = await supabase.auth.signInWithPassword({ email, password });
+    setBusy(null);
+    if (failure) setError(friendlyAuthMessage(failure.message));
+    else router.replace("/");
+  }
+
   return (
-    <main className="hh">
+    <main className="si">
       <style>{styles}</style>
 
-      <header className="hh-top">
-        <strong>Sartho</strong>
-        <span>Career representation</span>
+      <header className="si-brand">
+        <Image className="si-logo" src={sarthoIcon} alt="" width={46} height={46} priority />
+        <span>
+          <strong>Sartho</strong>
+          <small>Your Career CoPilot</small>
+        </span>
       </header>
 
-      <div className="hh-stage">
-        <h1>Your own headhunter. <em>Finally.</em></h1>
+      <div className="si-stage">
+        <section className="si-pitch">
+          <h1>Your own headhunter. <em>Finally.</em></h1>
+          <p>
+            Someone who knows your whole career, finds the roles worth your
+            experience, and makes sure you walk in ready.
+          </p>
+        </section>
 
-        <div className="hh-act">
-          <button type="button" className="hh-cta" onClick={signInWithGoogle} disabled={busy}>
-            <GoogleIcon />
-            <span>{busy ? "Opening…" : "Continue with Google"}</span>
-          </button>
-          <p className="hh-note">Private beta — approved accounts only.</p>
-        </div>
+        <section className="si-panel">
+          <h2>{mode === "reset" ? "Reset your password" : "Welcome to Sartho"}</h2>
+          <p className="si-sub">
+            {mode === "reset"
+              ? "We'll email you a link to set a new one."
+              : "Choose how you'd like to sign in."}
+          </p>
 
-        {message ? <p className="hh-error" role="alert">{message}</p> : null}
+          {mode === "signin" ? (
+            <>
+              <div className="si-providers">
+                <button type="button" className="si-provider" onClick={() => signInWithProvider("google")} disabled={busy !== null}>
+                  <GoogleIcon /><span>{busy === "google" ? "Opening…" : "Continue with Google"}</span>
+                </button>
+                <button type="button" className="si-provider" onClick={() => signInWithProvider("apple")} disabled={busy !== null}>
+                  <AppleIcon /><span>{busy === "apple" ? "Opening…" : "Continue with Apple"}</span>
+                </button>
+                <button type="button" className="si-provider" onClick={() => signInWithProvider("github")} disabled={busy !== null}>
+                  <GitHubIcon /><span>{busy === "github" ? "Opening…" : "Continue with GitHub"}</span>
+                </button>
+              </div>
+
+              <div className="si-or">or</div>
+            </>
+          ) : null}
+
+          <form className="si-form" onSubmit={submit}>
+            <label>
+              <span>Email</span>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
+
+            {mode === "signin" ? (
+              <label>
+                <span>Password</span>
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </label>
+            ) : null}
+
+            <button type="submit" className="si-submit" disabled={busy !== null}>
+              {busy === "email" || busy === "reset"
+                ? "Working…"
+                : mode === "reset"
+                  ? "Send reset link"
+                  : "Sign in"}
+            </button>
+          </form>
+
+          <div className="si-row">
+            <button
+              type="button"
+              className="si-link"
+              onClick={() => {
+                setMode(mode === "reset" ? "signin" : "reset");
+                setError(null);
+                setNotice(null);
+              }}
+            >
+              {mode === "reset" ? "Back to sign in" : "Forgot password?"}
+            </button>
+          </div>
+
+          {error ? <p className="si-msg is-error" role="alert">{error}</p> : null}
+          {notice ? <p className="si-msg is-ok" role="status">{notice}</p> : null}
+
+          <p className="si-note">
+            Private beta — approved accounts only. Nothing is submitted without your approval.
+          </p>
+        </section>
       </div>
     </main>
   );
@@ -197,11 +396,27 @@ export default function LoginPage() {
 
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
       <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
       <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.06v2.62A10 10 0 0 0 12 22Z" />
       <path fill="#FBBC05" d="M6.41 13.94A6.02 6.02 0 0 1 6.1 12c0-.67.12-1.33.31-1.94V7.44H3.06A10 10 0 0 0 2 12c0 1.61.38 3.14 1.06 4.56l3.35-2.62Z" />
       <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.87-2.88A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.94 5.44l3.35 2.62C7.2 7.7 9.4 5.94 12 5.94Z" />
+    </svg>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M16.36 12.72c.02 2.6 2.28 3.47 2.3 3.48-.02.06-.36 1.24-1.19 2.45-.72 1.05-1.47 2.1-2.65 2.12-1.16.02-1.53-.69-2.86-.69-1.32 0-1.74.67-2.83.71-1.14.04-2.01-1.13-2.73-2.18-1.48-2.15-2.61-6.07-1.09-8.72.75-1.31 2.1-2.15 3.57-2.17 1.11-.02 2.17.75 2.85.75.68 0 1.96-.93 3.3-.79.56.02 2.14.23 3.15 1.71-.08.05-1.88 1.1-1.86 3.33M14.2 4.9c.6-.73 1.01-1.75.9-2.76-.87.04-1.92.58-2.55 1.31-.56.65-1.05 1.68-.92 2.68.97.07 1.96-.49 2.57-1.23" />
+    </svg>
+  );
+}
+
+function GitHubIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.68-.22.68-.48l-.01-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.71.11 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85l-.01 2.75c0 .27.18.58.69.48A10 10 0 0 0 22 12c0-5.52-4.48-10-10-10Z" />
     </svg>
   );
 }
