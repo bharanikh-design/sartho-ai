@@ -35,7 +35,7 @@ const styles = `
   min-height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: clamp(34px, 6vh, 76px);
+  gap: clamp(44px, 9vh, 96px);
   padding: clamp(22px, 3.2vw, 46px);
   color: var(--text);
   overflow: hidden;
@@ -109,7 +109,7 @@ const styles = `
 }
 .si-pitch p {
   max-width: 40ch;
-  margin: clamp(18px, 2vw, 26px) 0 0;
+  margin: clamp(32px, 6.6vh, 76px) 0 0;
   color: var(--text-secondary);
   font-size: clamp(15px, 1.3vw, 17px);
   line-height: 1.6;
@@ -123,7 +123,7 @@ const styles = `
 .si-proof {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 10px 14px;
-  margin: clamp(26px, 3.4vh, 42px) 0 0; padding: 0;
+  margin: clamp(34px, 6vh, 68px) 0 0; padding: 0;
   list-style: none;
   color: var(--text-tertiary);
   font-size: 12.5px; font-weight: 560; letter-spacing: 0.055em; text-transform: uppercase;
@@ -421,7 +421,8 @@ const styles = `
 @media (max-width: 940px) {
   .si-stage { grid-template-columns: 1fr; gap: 30px; align-items: start; }
   .si-panel { justify-self: stretch; align-self: start; }
-  .si-proof { margin-top: 22px; font-size: 11.5px; }
+  .si-pitch p { margin-top: 24px; }
+  .si-proof { margin-top: 28px; font-size: 11.5px; }
   .si-pitch h1 { max-width: none; font-size: clamp(34px, 8vw, 52px); }
   .si-splash { padding: clamp(32px, 7vh, 72px) 22px clamp(28px, 6vh, 64px); }
   .si-splash-foot { gap: 20px; }
@@ -439,7 +440,7 @@ const styles = `
  */
 @media (max-height: 880px) and (min-width: 941px) {
   /* Height is what is scarce, so only the vertical measurements give way. */
-  .si { padding: clamp(16px, 2.2vh, 30px) clamp(24px, 3.2vw, 46px); gap: clamp(24px, 4vh, 44px); }
+  .si { padding: clamp(16px, 2.2vh, 30px) clamp(24px, 3.2vw, 46px); gap: clamp(30px, 6vh, 56px); }
   .si-logo { width: 48px; height: 48px; border-radius: 15px; }
   .si-brand strong { font-size: 22px; }
   .si-panel { padding: clamp(20px, 1.8vw, 26px); }
