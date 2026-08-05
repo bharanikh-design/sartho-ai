@@ -347,6 +347,33 @@
 .resume-import-result strong { font-weight: 620; }
 .resume-import-result span { color: var(--text-secondary); }
 
+/* Shown only where the claims landed on a different page than the uploader. */
+.resume-import-continue {
+  display: inline-flex; align-items: center; gap: 8px;
+  justify-self: start;
+  margin-top: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--mint) 46%, transparent);
+  background: color-mix(in srgb, var(--mint) 16%, transparent);
+  font-size: 13px; font-weight: 640;
+  transition: transform .2s ease, background .2s ease;
+}
+.resume-import-continue:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--mint) 24%, transparent);
+}
+
+/*
+ * The uploader standing in the hero of an empty home page, where a button that
+ * only navigated used to be. It takes the place — and the top margin — of the
+ * .hero-actions row it replaced.
+ */
+.hero-upload { margin-top: 28px; }
+.hero-upload .resume-import { background: color-mix(in srgb, var(--violet) 9%, transparent); }
+.hero-upload .resume-import-body { gap: 12px; }
+
 /* ---- the four steps ------------------------------------------------------ */
 /*
  * Each stage of the product depends on the one before it, and none of that was

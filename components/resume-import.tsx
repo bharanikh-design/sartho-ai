@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 /*
@@ -10,6 +11,10 @@ import { useRouter } from "next/navigation";
  * nothing extracted here is used anywhere until it has been read and approved,
  * and saying so up front is the difference between a tool that reads your
  * résumé and one that quietly speaks for you.
+ *
+ * This is the only "upload your résumé" control in the product. Anywhere that
+ * offers to take a résumé renders this — a second control wearing the same
+ * words but only linking here is a button that lies about what it does.
  */
 
 type Result = {
@@ -20,7 +25,25 @@ type Result = {
 
 const ACCEPT = ".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain";
 
-export function ResumeImport({ hasEvidence }: { hasEvidence: boolean }) {
+export function ResumeImport({
+  hasEvidence,
+  showLead = true,
+  continueHref,
+}: {
+  hasEvidence: boolean;
+  /** Off where the surrounding page already makes the same promise. */
+  showLead?: boolean;
+  /*
+   * Where the review lives, when it is not on this page.
+   *
+   * Without it the component assumes the claims land underneath and simply
+   * refreshes. With it, refreshing would be wrong: the page that offered the
+   * upload is usually an empty state, so re-rendering it against the evidence
+   * that now exists replaces the result with something else entirely, and the
+   * person is left wondering where their résumé went.
+   */
+  continueHref?: string;
+}) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -48,8 +71,9 @@ export function ResumeImport({ hasEvidence }: { hasEvidence: boolean }) {
         evidenceCreated: payload.evidenceCreated ?? 0,
         evidenceSkipped: payload.evidenceSkipped ?? 0,
       });
-      // Brings the newly extracted claims into the review list below.
-      router.refresh();
+      // Brings the newly extracted claims into the review list below. Where the
+      // review is on another page, the result and its link have to survive.
+      if (!continueHref) router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The import failed.");
     } finally {
@@ -73,11 +97,13 @@ export function ResumeImport({ hasEvidence }: { hasEvidence: boolean }) {
       onDrop={onDrop}
     >
       <div className="resume-import-body">
-        <p className="resume-import-lead">
-          {hasEvidence
-            ? "Add another résumé and Sartho will read it for anything new. Claims you have already reviewed are left exactly as you left them."
-            : "Upload your résumé and Sartho will read every role and achievement out of it. Nothing it finds is used anywhere until you have approved it."}
-        </p>
+        {showLead ? (
+          <p className="resume-import-lead">
+            {hasEvidence
+              ? "Add another résumé and Sartho will read it for anything new. Claims you have already reviewed are left exactly as you left them."
+              : "Upload your résumé and Sartho will read every role and achievement out of it. Nothing it finds is used anywhere until you have approved it."}
+          </p>
+        ) : null}
 
         {/*
           * A label wrapping the input, not a button that calls .click() on a
@@ -125,8 +151,23 @@ export function ResumeImport({ hasEvidence }: { hasEvidence: boolean }) {
             {result.rolesCreated ? `${result.rolesCreated} role${result.rolesCreated === 1 ? "" : "s"} added. ` : ""}
             {result.evidenceSkipped
               ? `${result.evidenceSkipped} already in your profile, left untouched.`
-              : "Approve or reject each one below."}
+              : continueHref
+                ? "Nothing is used anywhere until you approve it."
+                : "Approve or reject each one below."}
           </span>
+
+          {/*
+            * The label is built from what actually happened rather than passed
+            * in, so it cannot promise claims to review when none were found.
+            */}
+          {continueHref ? (
+            <Link href={continueHref} className="resume-import-continue">
+              {result.evidenceCreated
+                ? `Review ${result.evidenceCreated} claim${result.evidenceCreated === 1 ? "" : "s"}`
+                : "Open your Career Profile"}
+              <span aria-hidden="true">→</span>
+            </Link>
+          ) : null}
         </div>
       ) : null}
     </div>
