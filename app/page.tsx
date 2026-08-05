@@ -91,6 +91,15 @@ export default async function HomePage() {
             <div className="hero-upload">
               <ResumeImport hasEvidence={false} showLead={false} continueHref="/career-truth" />
             </div>
+
+            {/*
+              * The welcome tour is dismissible and stays dismissed, and this
+              * screen — the one a brand-new account actually lands on — had no
+              * way back to it. The dashboard below carries the same link.
+              */}
+            <p className="hero-replay">
+              <Link href="/?tour=1">Replay the welcome tour <span aria-hidden="true">→</span></Link>
+            </p>
           </div>
 
           <div className="home-hero-signal" aria-label="Why this comes first">

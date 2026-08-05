@@ -165,11 +165,19 @@ const styles = `
   text-shadow: 0 0 60px color-mix(in srgb, var(--violet) 50%, transparent);
 }
 .si-pitch p {
+  /*
+   * Body copy at a body-copy size. 15px with a 1.6 leading is interface text,
+   * and this is a sentence someone is meant to read — 17-19px over a measure
+   * of about 40 characters at 1.65 is where prose stops being a caption. The
+   * space above it is set from viewport height so the headline and the
+   * sentence stay two separate thoughts on any window.
+   */
   max-width: 40ch;
-  margin: clamp(32px, 6.6vh, 76px) 0 0;
+  margin: clamp(38px, 8vh, 92px) 0 0;
   color: var(--text-secondary);
-  font-size: clamp(15px, 1.3vw, 17px);
-  line-height: 1.6;
+  font-size: clamp(16px, 1.35vw, 19px);
+  line-height: 1.65;
+  letter-spacing: -0.005em;
   animation: siRise 1s ease .18s both;
 }
 
@@ -180,7 +188,9 @@ const styles = `
 .si-proof {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 10px 14px;
-  margin: 0; padding: 0;
+  /* Lifted off the foot so it reads as the column's last line rather than
+     something resting on the bottom edge. */
+  margin: 0 0 clamp(20px, 3vh, 34px); padding: 0;
   list-style: none;
   color: var(--text-tertiary);
   font-size: 12.5px; font-weight: 560; letter-spacing: 0.055em; text-transform: uppercase;

@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ResumeProgress, type ImportProgress } from "@/components/resume-progress";
+import { readProgressEvents } from "@/lib/resume/progress-stream";
 
 /*
  * The way a career gets into Sartho.
@@ -50,6 +52,7 @@ export function ResumeImport({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
   const [dragging, setDragging] = useState(false);
 
   async function upload(file: File) {
@@ -57,20 +60,52 @@ export function ResumeImport({
     setError(null);
     setResult(null);
     setFileName(file.name);
+    setProgress({ stage: "extracted", fileName: file.name, characters: 0, sample: "", roles: 0, claims: 0 });
 
     try {
       const body = new FormData();
       body.append("file", file);
       const response = await fetch("/api/career/import", { method: "POST", body });
-      const payload = (await response.json()) as Partial<Result> & { error?: string };
 
-      if (!response.ok) throw new Error(payload.error ?? "The import failed.");
+      /*
+       * Anything that could fail fast still fails as JSON with a real status.
+       * Only the long part streams, so both shapes have to be handled.
+       */
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(payload.error ?? "The import failed.");
+      }
+      if (!response.body) throw new Error("The import failed.");
 
-      setResult({
-        rolesCreated: payload.rolesCreated ?? 0,
-        evidenceCreated: payload.evidenceCreated ?? 0,
-        evidenceSkipped: payload.evidenceSkipped ?? 0,
+      let finished: Result | null = null;
+
+      await readProgressEvents(response.body, (event) => {
+        if (event.stage === "error") throw new Error(event.error);
+
+        if (event.stage === "done") {
+          finished = {
+            rolesCreated: event.rolesCreated,
+            evidenceCreated: event.evidenceCreated,
+            evidenceSkipped: event.evidenceSkipped,
+          };
+        }
+
+        setProgress((current) => {
+          if (!current) return current;
+          if (event.stage === "extracted") {
+            return { ...current, stage: "extracted", characters: event.characters, sample: event.sample };
+          }
+          if (event.stage === "reading") return { ...current, stage: "reading" };
+          if (event.stage === "saving") {
+            return { ...current, stage: "saving", roles: event.roles, claims: event.claims };
+          }
+          return { ...current, stage: "done" };
+        });
       });
+
+      if (!finished) throw new Error("The import ended before it finished.");
+
+      setResult(finished);
       // Brings the newly extracted claims into the review list below. Where the
       // review is on another page, the result and its link have to survive.
       if (!continueHref) router.refresh();
@@ -78,6 +113,7 @@ export function ResumeImport({
       setError(caught instanceof Error ? caught.message : "The import failed.");
     } finally {
       setBusy(false);
+      setProgress(null);
       if (inputRef.current) inputRef.current.value = "";
     }
   }
@@ -132,11 +168,7 @@ export function ResumeImport({
         </p>
       </div>
 
-      {busy ? (
-        <p className="resume-import-status" role="status">
-          Reading the document and pulling out every role and claim. This usually takes under a minute.
-        </p>
-      ) : null}
+      {progress ? <ResumeProgress progress={progress} /> : null}
 
       {error ? <div className="inline-error" role="alert">{error}</div> : null}
 
