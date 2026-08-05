@@ -25,7 +25,11 @@ const entryArt =
  * switch along with the rest of the product.
  */
 
-type Provider = "google" | "apple" | "github";
+/*
+ * Supabase names the LinkedIn provider "linkedin_oidc"; the bare "linkedin"
+ * id is the retired OAuth 2.0 one and is rejected.
+ */
+type Provider = "google" | "apple" | "linkedin_oidc";
 type Mode = "signin" | "reset";
 
 const styles = `
@@ -40,16 +44,45 @@ const styles = `
   color: var(--text);
   overflow: hidden;
 }
-.si::before {
+/*
+ * Colour, rather than a tint of it.
+ *
+ * One faint violet blur at 20% read as a smudge on an off-white page — the
+ * palette was present but never actually seen. Three overlapping fields at
+ * real strength give the page a light source: violet high on the left where
+ * the headline sits, blue behind the card, and a warm low note underneath so
+ * the wash is not a single hue stretched across the whole screen. All three
+ * are mixed from the theme tokens, so the dark theme deepens where the light
+ * theme brightens instead of needing a second set of colours.
+ */
+.si::before,
+.si::after {
   content: "";
   position: absolute; z-index: 0;
-  top: -32%; left: 4%;
-  width: min(72vw, 820px); aspect-ratio: 1;
   border-radius: 999px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--violet) 20%, transparent), transparent 64%);
-  filter: blur(44px);
   pointer-events: none;
 }
+.si::before {
+  top: -30%; left: -6%;
+  width: min(88vw, 1000px); aspect-ratio: 1;
+  background:
+    radial-gradient(circle at 38% 42%, color-mix(in srgb, var(--violet) 62%, transparent), transparent 58%),
+    radial-gradient(circle at 74% 20%, color-mix(in srgb, var(--blue) 44%, transparent), transparent 62%);
+  filter: blur(60px);
+  opacity: .72;
+}
+.si::after {
+  right: -14%; bottom: -34%;
+  width: min(80vw, 900px); aspect-ratio: 1;
+  background:
+    radial-gradient(circle at 46% 50%, color-mix(in srgb, var(--blue) 52%, transparent), transparent 60%),
+    radial-gradient(circle at 24% 78%, color-mix(in srgb, var(--rose) 30%, transparent), transparent 64%);
+  filter: blur(72px);
+  opacity: .58;
+}
+/* The dark theme carries deeper colour before it turns to mud. */
+:root[data-theme="dark"] .si::before { opacity: .5; }
+:root[data-theme="dark"] .si::after { opacity: .42; }
 
 /*
  * Brand lockup — the first thing on the page, at full size, on its own.
@@ -88,10 +121,34 @@ const styles = `
   position: relative; z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 1.06fr) minmax(340px, 430px);
+  /*
+   * One row, sized to its content and centred in whatever height is left.
+   *
+   * Left as 1fr the row swallowed the leftover space, so stretching the pitch
+   * stretched it past the card rather than to it. Sized to content, the row is
+   * exactly the card's height and both columns stretch to the same line.
+   */
+  grid-template-rows: auto;
+  align-content: center;
   gap: clamp(38px, 6vw, 90px);
-  align-items: start;
+  align-items: stretch;
 }
-.si-panel { align-self: center; }
+
+/*
+ * The left column is given the card's height and spends it.
+ *
+ * The card is the taller of the two, so stretching the pitch to the row makes
+ * both columns start and finish on the same lines; the lead sits at the top and
+ * the proof line at the foot, with the slack collecting between them instead of
+ * trailing off below a column that stopped early. The gap is the floor, so on a
+ * short window the two blocks close up rather than overlapping.
+ */
+.si-pitch {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(28px, 5vh, 64px);
+}
 
 .si-pitch h1 {
   max-width: 12ch;
@@ -123,7 +180,7 @@ const styles = `
 .si-proof {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 10px 14px;
-  margin: clamp(34px, 6vh, 68px) 0 0; padding: 0;
+  margin: 0; padding: 0;
   list-style: none;
   color: var(--text-tertiary);
   font-size: 12.5px; font-weight: 560; letter-spacing: 0.055em; text-transform: uppercase;
@@ -420,7 +477,10 @@ const styles = `
 
 @media (max-width: 940px) {
   .si-stage { grid-template-columns: 1fr; gap: 30px; align-items: start; }
+  /* Stacked: no second column to match, so the row goes back to flowing. */
+  .si-stage { grid-template-rows: none; align-content: start; }
   .si-panel { justify-self: stretch; align-self: start; }
+  .si-pitch { display: block; }
   .si-pitch p { margin-top: 24px; }
   .si-proof { margin-top: 28px; font-size: 11.5px; }
   .si-pitch h1 { max-width: none; font-size: clamp(34px, 8vw, 52px); }
@@ -672,11 +732,15 @@ export default function LoginPage() {
 
       <div className="si-stage" inert={covered}>
         <section className="si-pitch">
-          <h1>Your own headhunter. <em>Finally.</em></h1>
-          <p>
-            Someone who knows your whole career, finds the roles worth your
-            experience, and makes sure you walk in ready.
-          </p>
+          {/* Grouped, so space-between puts the foot at the foot rather than
+              floating the sentence away from the headline it belongs to. */}
+          <div className="si-pitch-lead">
+            <h1>Your own headhunter. <em>Finally.</em></h1>
+            <p>
+              Someone who knows your whole career, finds the roles worth your
+              experience, and makes sure you walk in ready.
+            </p>
+          </div>
 
           <ul className="si-proof">
             <li>Role matching</li>
@@ -702,8 +766,8 @@ export default function LoginPage() {
                 <button type="button" className="si-provider" onClick={() => signInWithProvider("apple")} disabled={busy !== null}>
                   <AppleIcon /><span>{busy === "apple" ? "Opening…" : "Continue with Apple"}</span>
                 </button>
-                <button type="button" className="si-provider" onClick={() => signInWithProvider("github")} disabled={busy !== null}>
-                  <GitHubIcon /><span>{busy === "github" ? "Opening…" : "Continue with GitHub"}</span>
+                <button type="button" className="si-provider" onClick={() => signInWithProvider("linkedin_oidc")} disabled={busy !== null}>
+                  <LinkedInIcon /><span>{busy === "linkedin_oidc" ? "Opening…" : "Continue with LinkedIn"}</span>
                 </button>
               </div>
 
@@ -792,10 +856,10 @@ function AppleIcon() {
   );
 }
 
-function GitHubIcon() {
+function LinkedInIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.68-.22.68-.48l-.01-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.8c.85 0 1.71.11 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85l-.01 2.75c0 .27.18.58.69.48A10 10 0 0 0 22 12c0-5.52-4.48-10-10-10Z" />
+    <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#0A66C2" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13M7.12 20.45H3.55V9h3.57zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0" />
     </svg>
   );
 }
