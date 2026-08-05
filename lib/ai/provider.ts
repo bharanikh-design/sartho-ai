@@ -65,7 +65,8 @@ async function callAnthropic(request: StructuredRequest, apiKey: string) {
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514",
+      // Overridable with ANTHROPIC_MODEL; the default tracks the current family.
+      model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
       max_tokens: 7000,
       temperature: 0,
       system: `${request.system}\nReturn only one JSON object matching this JSON Schema:\n${JSON.stringify(request.schema)}`,
