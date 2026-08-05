@@ -34,7 +34,8 @@ const styles = `
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
-  grid-template-rows: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: clamp(34px, 6vh, 76px);
   padding: clamp(22px, 3.2vw, 46px);
   color: var(--text);
   overflow: hidden;
@@ -51,42 +52,46 @@ const styles = `
 }
 
 /*
- * Brand lockup — kept whole, and kept with the sentence it introduces.
+ * Brand lockup — the first thing on the page, at full size, on its own.
  *
- * Stranded in the page's top corner it had a fifth of the screen of nothing
- * underneath it, because the column it sat above was centred against a card
- * twice its height. It was never a corner ornament: it is the first line of the
- * left-hand column, and once it sits there the gap it used to leave behind
- * stops existing rather than being tuned.
+ * The mark is stated once and stated large. It used to appear twice on this
+ * screen, small in the corner and again on the card, which is two half-strength
+ * statements of the same thing; the card no longer carries a copy. What kept
+ * the corner from working before was not the position but the column beneath
+ * it drifting down against a taller card — the stage below now starts on the
+ * card's line, so the space under the lockup is a margin rather than a hole.
  */
 .si-brand {
   position: relative; z-index: 2;
-  display: flex; align-items: center; gap: 13px;
-  margin-bottom: clamp(26px, 3.4vh, 44px);
+  display: flex; align-items: center; gap: 16px;
   animation: siRise .8s ease both;
 }
-.si-logo { width: 46px; height: 46px; border-radius: 13px; flex: none; }
-.si-brand strong { display: block; font-size: 21px; font-weight: 650; letter-spacing: -0.028em; }
-.si-brand small { display: block; margin-top: 3px; font-size: 12.5px; color: var(--text-tertiary); }
+.si-logo {
+  width: clamp(52px, 4vw, 64px); height: clamp(52px, 4vw, 64px);
+  border-radius: 18px; flex: none;
+}
+.si-brand strong { display: block; font-size: clamp(22px, 1.9vw, 27px); font-weight: 660; letter-spacing: -0.032em; }
+.si-brand small { display: block; margin-top: 4px; font-size: 13px; color: var(--text-tertiary); }
 
 /* Stage */
 /*
- * Two masses of comparable weight, centred against each other.
+ * The headline starts on the card's line.
  *
- * With the brand lockup gathered into it, the left column runs to roughly 500px
- * against the card's 695 — near enough that centring them reads as deliberate
- * margin rather than as one column adrift in the other's row. The alternative,
- * stretching the pitch to pin its top and bottom edges to the card's, only
- * moves the empty space: the headline ends up crowding the lockup and the hole
- * reappears in the middle of the column.
+ * This is the whole trick, and it is what centring the shorter column inside
+ * the taller one's row got wrong: the card fills the row, so a centred pitch
+ * begins a hundred and ninety pixels below it and the two columns read as
+ * unrelated. Anchoring the pitch to the top of the row gives them a shared
+ * edge, and what is left over collects below the shorter column, where it is
+ * ordinary margin rather than a gap in the middle of the composition.
  */
 .si-stage {
   position: relative; z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 1.06fr) minmax(340px, 430px);
   gap: clamp(38px, 6vw, 90px);
-  align-items: center;
+  align-items: start;
 }
+.si-panel { align-self: center; }
 
 .si-pitch h1 {
   max-width: 12ch;
@@ -153,13 +158,6 @@ const styles = `
     0 0 160px 10px color-mix(in srgb, var(--blue) 20%, transparent);
   backdrop-filter: blur(20px);
   animation: siRise 1s ease .26s both;
-}
-/* The mark crowns the card — the door you are about to walk through. */
-.si-card-mark {
-  display: block;
-  width: 46px; height: 46px;
-  margin: 0 auto 12px;
-  border-radius: 13px;
 }
 .si-panel h2 { margin: 0; font-size: 20px; font-weight: 640; letter-spacing: -0.026em; text-align: center; }
 .si-sub { margin: 7px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; text-align: center; }
@@ -423,7 +421,6 @@ const styles = `
 @media (max-width: 940px) {
   .si-stage { grid-template-columns: 1fr; gap: 30px; align-items: start; }
   .si-panel { justify-self: stretch; align-self: start; }
-  .si-brand { margin-bottom: 22px; }
   .si-proof { margin-top: 22px; font-size: 11.5px; }
   .si-pitch h1 { max-width: none; font-size: clamp(34px, 8vw, 52px); }
   .si-splash { padding: clamp(32px, 7vh, 72px) 22px clamp(28px, 6vh, 64px); }
@@ -441,10 +438,10 @@ const styles = `
  * of the available outcomes.
  */
 @media (max-height: 880px) and (min-width: 941px) {
-  /* Height is what is scarce, so only the vertical padding gives way. */
-  .si { padding: clamp(16px, 2.2vh, 30px) clamp(24px, 3.2vw, 46px); }
-  .si-logo { width: 40px; height: 40px; border-radius: 11px; }
-  .si-brand strong { font-size: 19px; }
+  /* Height is what is scarce, so only the vertical measurements give way. */
+  .si { padding: clamp(16px, 2.2vh, 30px) clamp(24px, 3.2vw, 46px); gap: clamp(24px, 4vh, 44px); }
+  .si-logo { width: 48px; height: 48px; border-radius: 15px; }
+  .si-brand strong { font-size: 22px; }
   .si-panel { padding: clamp(20px, 1.8vw, 26px); }
 }
 @media (max-height: 720px) {
@@ -664,16 +661,16 @@ export default function LoginPage() {
         * user can Tab straight past Continue into provider buttons they cannot
         * see, and a screen reader is handed both screens at once.
         */}
+      <header className="si-brand" inert={covered}>
+        <Image className="si-logo" src={sarthoIcon} alt="" width={256} height={256} quality={95} priority />
+        <span>
+          <strong>Sartho</strong>
+          <small>Your Career CoPilot</small>
+        </span>
+      </header>
+
       <div className="si-stage" inert={covered}>
         <section className="si-pitch">
-          <header className="si-brand">
-            <Image className="si-logo" src={sarthoIcon} alt="" width={184} height={184} quality={95} priority />
-            <span>
-              <strong>Sartho</strong>
-              <small>Your Career CoPilot</small>
-            </span>
-          </header>
-
           <h1>Your own headhunter. <em>Finally.</em></h1>
           <p>
             Someone who knows your whole career, finds the roles worth your
@@ -688,7 +685,6 @@ export default function LoginPage() {
         </section>
 
         <section className="si-panel">
-          <Image className="si-card-mark" src={sarthoIcon} alt="" width={216} height={216} quality={95} />
           <h2>{mode === "reset" ? "Reset your password" : "Welcome to Sartho"}</h2>
           <p className="si-sub">
             {mode === "reset"
