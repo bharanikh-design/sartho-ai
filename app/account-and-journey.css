@@ -691,5 +691,22 @@ a.journey-link:hover { transform: translateY(-1px); border-color: var(--line-bri
 .library-name { font-size: 13.5px; font-weight: 610; overflow-wrap: anywhere; }
 .library-meta { color: var(--text-tertiary); font-size: 12px; }
 .library-result { color: var(--text-secondary); font-size: 12.5px; text-align: right; }
-.library-result.is-failed { color: var(--rose); }
+/*
+ * A failure is a sentence, not a status chip.
+ *
+ * Right-aligned in the row's spare inches, a two-line explanation of why an
+ * upload did not work wrapped into a ragged pink column that read as damage
+ * rather than as something to act on. Given the full width of the row and a
+ * left edge to start from, it reads as what it is.
+ */
+.library-result.is-failed {
+  flex-basis: 100%;
+  margin-top: 2px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--rose) 32%, transparent);
+  background: color-mix(in srgb, var(--rose) 9%, transparent);
+  color: var(--rose);
+  font-size: 12.5px; line-height: 1.55; text-align: left;
+}
 .library-row.is-failed { border-color: color-mix(in srgb, var(--rose) 35%, transparent); }

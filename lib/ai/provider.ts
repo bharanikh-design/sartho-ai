@@ -1,3 +1,5 @@
+import { describeAiFailure } from "./failure";
+
 type StructuredRequest = {
   system: string;
   prompt: string;
@@ -82,12 +84,39 @@ async function callAnthropic(request: StructuredRequest, apiKey: string) {
   return JSON.parse(extractJson(text)) as unknown;
 }
 
+/*
+ * Two providers, tried in order — not one provider and a spare that never gets
+ * used.
+ *
+ * This previously picked Anthropic only when OPENAI_API_KEY was *absent*, which
+ * is the one case that almost never happens. The case that does happen is a key
+ * that is present and an account behind it that has run out of credit: every
+ * import then failed at the model call with a billing error, while a perfectly
+ * good second key sat in the environment untouched. A configured provider that
+ * cannot be reached is not a configured provider, so a failure moves on to the
+ * next one and only the last failure is reported.
+ */
 export async function generateStructuredJson(request: StructuredRequest) {
   const openAIKey = process.env.OPENAI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-  if (openAIKey) return callOpenAI(request, openAIKey);
-  if (anthropicKey) return callAnthropic(request, anthropicKey);
+  const providers: Array<() => Promise<unknown>> = [];
+  if (openAIKey) providers.push(() => callOpenAI(request, openAIKey));
+  if (anthropicKey) providers.push(() => callAnthropic(request, anthropicKey));
 
-  throw new Error("No server-side AI provider is configured. Add OPENAI_API_KEY or ANTHROPIC_API_KEY in Vercel.");
+  if (!providers.length) {
+    throw new Error("No server-side AI provider is configured. Add OPENAI_API_KEY or ANTHROPIC_API_KEY in Vercel.");
+  }
+
+  let last: unknown;
+  for (const attempt of providers) {
+    try {
+      return await attempt();
+    } catch (caught) {
+      last = caught;
+    }
+  }
+
+  const message = last instanceof Error ? last.message : "The AI provider failed.";
+  throw new Error(describeAiFailure(message));
 }
