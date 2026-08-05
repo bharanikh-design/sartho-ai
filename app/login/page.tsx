@@ -340,7 +340,7 @@ const styles = `
  * never crowd the headline or the button no matter the window.
  */
 .si-scene {
-  position: absolute; left: 50%; top: 58%;
+  position: absolute; left: 50%; top: 66%;
   z-index: 0;
   /*
    * The whole frame, fitted to the height rather than cropped to fill. The
@@ -352,7 +352,9 @@ const styles = `
   /*
    * Sat low and a little under full height: the doorway falls near the top of
    * the artwork, and at dead centre it collided with the last line of the
-   * headline on a short window.
+   * headline on a short window. It sits lower again now that the lockup lives
+   * under the headline — the doorway is the brightest thing on the screen and
+   * a wordmark laid over it simply disappears.
    */
   height: 96%;
   aspect-ratio: 2200 / 1675;
@@ -363,8 +365,23 @@ const styles = `
   background-size: cover;
   background-position: 50% 50%;
   background-repeat: no-repeat;
-  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%);
-          mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%);
+  /*
+   * Faded on all four edges, not just the sides.
+   *
+   * Sitting lower puts the artwork's top edge inside the visible area with a
+   * lit wall immediately below it, and a hard cut between near-black and a lit
+   * wall is a seam no amount of scrim covers. Two masks intersected fade the
+   * frame out on every side, so it reads as light in a dark room rather than
+   * as a picture pasted onto the page.
+   */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 15%, #000 86%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-image:
+    linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 15%, #000 86%, transparent 100%);
+          mask-composite: intersect;
   pointer-events: none;
   animation: sceneIn 1.6s ease .2s both;
 }
@@ -401,13 +418,27 @@ const styles = `
   text-shadow: 0 0 64px rgba(150,130,255,.75);
 }
 
-/* brand lockup + the way in, together at the foot of the corridor */
+/*
+ * The name sits under the sentence it signs, above the doorway.
+ *
+ * It used to stack with the button at the foot, which put two things asking
+ * for attention in the same place and made the way in the second of them.
+ * Alone at the bottom, the button is the only thing down there to press.
+ */
+.si-splash-head {
+  position: relative; z-index: 2;
+  display: grid; justify-items: center;
+  gap: clamp(18px, 2.8vh, 34px);
+}
 .si-splash-foot {
   position: relative; z-index: 2;
-  display: grid; justify-items: center; gap: 24px;
+  display: grid; justify-items: center;
   animation: siRise 1.1s ease .62s both;
 }
-.si-splash-lockup { display: flex; align-items: center; gap: 12px; }
+.si-splash-lockup {
+  display: flex; align-items: center; gap: 12px;
+  animation: siRise 1.1s ease .5s both;
+}
 .si-splash-lockup img { width: 46px; height: 46px; border-radius: 13px; flex: none; }
 .si-splash-lockup strong { display: block; font-size: 21px; font-weight: 650; letter-spacing: -0.028em; color: #f4f6ff; }
 .si-splash-lockup small { display: block; margin-top: 3px; font-size: 12.5px; color: rgba(226,232,255,.5); }
@@ -445,7 +476,8 @@ const styles = `
  * clear first so nothing is in the way, then the door rushes up to meet you.
  */
 .si-splash.is-leaving .si-splash-line { animation: lineThrough .8s cubic-bezier(.6,0,.75,.2) forwards; }
-.si-splash.is-leaving .si-splash-foot { animation: splashLift .4s ease forwards; }
+.si-splash.is-leaving .si-splash-foot,
+.si-splash.is-leaving .si-splash-lockup { animation: splashLift .4s ease forwards; }
 .si-splash.is-leaving .si-scene { animation: sceneThrough .95s cubic-bezier(.7,0,.85,.2) forwards; }
 
 /*
@@ -485,7 +517,7 @@ const styles = `
   .si-proof { margin-top: 28px; font-size: 11.5px; }
   .si-pitch h1 { max-width: none; font-size: clamp(34px, 8vw, 52px); }
   .si-splash { padding: clamp(32px, 7vh, 72px) 22px clamp(28px, 6vh, 64px); }
-  .si-splash-foot { gap: 20px; }
+  .si-splash-head { gap: 24px; }
 }
 /*
  * Short windows — a laptop with browser chrome and a taskbar taking their cut.
@@ -507,13 +539,13 @@ const styles = `
 }
 @media (max-height: 720px) {
   .si-splash-line { font-size: clamp(28px, 5vw, 62px); }
-  .si-splash-foot { gap: 18px; }
+  .si-splash-head { gap: 22px; }
   .si-splash-enter { min-height: 46px; }
 }
 @media (max-height: 560px) {
   .si-splash-line { font-size: clamp(24px, 4vw, 46px); }
   .si-splash-lockup img { width: 34px; height: 34px; }
-  .si-splash-foot { gap: 14px; }
+  .si-splash-head { gap: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   /*
@@ -698,10 +730,13 @@ export default function LoginPage() {
       {splash !== "done" ? (
         <div className={`si-splash${splash === "leaving" ? " is-leaving" : ""}`}>
           <div className="si-scene" aria-hidden="true" />
-          <h1 className="si-splash-line">
-            Your own headhunter. <em>Finally.</em>
-          </h1>
-          <div className="si-splash-foot">
+
+          {/* Head and foot, so space-between has two things to separate. The
+              lockup belongs to the sentence it signs, not to the button. */}
+          <div className="si-splash-head">
+            <h1 className="si-splash-line">
+              Your own headhunter. <em>Finally.</em>
+            </h1>
             <span className="si-splash-lockup">
               <Image src={sarthoIcon} alt="" width={152} height={152} quality={95} priority />
               <span>
@@ -709,6 +744,9 @@ export default function LoginPage() {
                 <small>Your Career CoPilot</small>
               </span>
             </span>
+          </div>
+
+          <div className="si-splash-foot">
             <button type="button" className="si-splash-enter" onClick={walkThrough}>
               Continue to Sign In
             </button>
