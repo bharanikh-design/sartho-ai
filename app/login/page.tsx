@@ -34,8 +34,7 @@ const styles = `
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
-  grid-template-rows: auto 1fr;
-  gap: clamp(22px, 3vw, 38px);
+  grid-template-rows: 1fr;
   padding: clamp(22px, 3.2vw, 46px);
   color: var(--text);
   overflow: hidden;
@@ -51,10 +50,19 @@ const styles = `
   pointer-events: none;
 }
 
-/* Brand lockup — kept whole. */
+/*
+ * Brand lockup — kept whole, and kept with the sentence it introduces.
+ *
+ * Stranded in the page's top corner it had a fifth of the screen of nothing
+ * underneath it, because the column it sat above was centred against a card
+ * twice its height. It was never a corner ornament: it is the first line of the
+ * left-hand column, and once it sits there the gap it used to leave behind
+ * stops existing rather than being tuned.
+ */
 .si-brand {
   position: relative; z-index: 2;
   display: flex; align-items: center; gap: 13px;
+  margin-bottom: clamp(26px, 3.4vh, 44px);
   animation: siRise .8s ease both;
 }
 .si-logo { width: 46px; height: 46px; border-radius: 13px; flex: none; }
@@ -62,6 +70,16 @@ const styles = `
 .si-brand small { display: block; margin-top: 3px; font-size: 12.5px; color: var(--text-tertiary); }
 
 /* Stage */
+/*
+ * Two masses of comparable weight, centred against each other.
+ *
+ * With the brand lockup gathered into it, the left column runs to roughly 500px
+ * against the card's 695 — near enough that centring them reads as deliberate
+ * margin rather than as one column adrift in the other's row. The alternative,
+ * stretching the pitch to pin its top and bottom edges to the card's, only
+ * moves the empty space: the headline ends up crowding the lockup and the hole
+ * reappears in the middle of the column.
+ */
 .si-stage {
   position: relative; z-index: 2;
   display: grid;
@@ -93,12 +111,39 @@ const styles = `
   animation: siRise 1s ease .18s both;
 }
 
+/*
+ * What the headline is promising, in two or three words each — and the foot
+ * the left column needs to hold its own beside the card.
+ */
+.si-proof {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px 14px;
+  margin: clamp(26px, 3.4vh, 42px) 0 0; padding: 0;
+  list-style: none;
+  color: var(--text-tertiary);
+  font-size: 12.5px; font-weight: 560; letter-spacing: 0.055em; text-transform: uppercase;
+  animation: siRise 1s ease .3s both;
+}
+.si-proof li { display: flex; align-items: center; gap: 14px; }
+/*
+ * The separator trails its own item rather than leading the next one. Owned by
+ * the following item, a wrap carries the dot to the start of the new line and
+ * the list reads as though it began with a bullet.
+ */
+.si-proof li:not(:last-child)::after {
+  content: "";
+  width: 3px; height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: .6;
+}
+
 /* Panel */
 .si-panel {
   position: relative;
   justify-self: end;
   width: 100%;
-  padding: clamp(24px, 2.6vw, 34px);
+  padding: clamp(22px, 2.1vw, 28px);
   border: 1px solid var(--line);
   border-radius: 26px;
   background: var(--glass-strong);
@@ -112,16 +157,16 @@ const styles = `
 /* The mark crowns the card — the door you are about to walk through. */
 .si-card-mark {
   display: block;
-  width: 54px; height: 54px;
-  margin: 0 auto 16px;
-  border-radius: 15px;
+  width: 46px; height: 46px;
+  margin: 0 auto 12px;
+  border-radius: 13px;
 }
 .si-panel h2 { margin: 0; font-size: 20px; font-weight: 640; letter-spacing: -0.026em; text-align: center; }
 .si-sub { margin: 7px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; text-align: center; }
 
-.si-providers { display: grid; gap: 9px; margin-top: 20px; }
+.si-providers { display: grid; gap: 8px; margin-top: 16px; }
 .si-provider {
-  width: 100%; min-height: 48px;
+  width: 100%; min-height: 46px;
   display: flex; align-items: center; justify-content: center; gap: 10px;
   border: 1px solid var(--line-bright);
   border-radius: 13px;
@@ -141,12 +186,12 @@ const styles = `
 
 .si-or {
   display: flex; align-items: center; gap: 12px;
-  margin: 18px 0;
+  margin: 15px 0;
   color: var(--text-tertiary); font-size: 11.5px;
 }
 .si-or::before, .si-or::after { content: ""; height: 1px; flex: 1; background: var(--line); }
 
-.si-form { display: grid; gap: 11px; }
+.si-form { display: grid; gap: 10px; }
 .si-form label { display: grid; gap: 6px; }
 .si-form label > span { font-size: 12px; font-weight: 560; color: var(--text-secondary); }
 .si-form input {
@@ -180,7 +225,7 @@ const styles = `
 .si-submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
 .si-submit:disabled { opacity: .55; cursor: progress; }
 
-.si-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 13px; }
+.si-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; }
 .si-link {
   border: 0; padding: 0; background: none;
   color: var(--blue); cursor: pointer; font: inherit;
@@ -198,7 +243,7 @@ const styles = `
 .si-msg.is-ok { border-color: color-mix(in srgb, var(--mint) 40%, transparent); color: var(--mint); background: color-mix(in srgb, var(--mint) 10%, transparent); }
 
 .si-note {
-  margin: 16px 0 0; padding-top: 15px;
+  margin: 14px 0 0; padding-top: 13px;
   border-top: 1px solid var(--line);
   color: var(--text-tertiary); font-size: 11.5px; line-height: 1.55; text-align: center;
 }
@@ -377,7 +422,9 @@ const styles = `
 
 @media (max-width: 940px) {
   .si-stage { grid-template-columns: 1fr; gap: 30px; align-items: start; }
-  .si-panel { justify-self: stretch; }
+  .si-panel { justify-self: stretch; align-self: start; }
+  .si-brand { margin-bottom: 22px; }
+  .si-proof { margin-top: 22px; font-size: 11.5px; }
   .si-pitch h1 { max-width: none; font-size: clamp(34px, 8vw, 52px); }
   .si-splash { padding: clamp(32px, 7vh, 72px) 22px clamp(28px, 6vh, 64px); }
   .si-splash-foot { gap: 20px; }
@@ -386,6 +433,20 @@ const styles = `
  * Short windows — a laptop with browser chrome and a taskbar taking their cut.
  * The headline comes down with everything else so it never crowds the way in.
  */
+/*
+ * A sign-in card carrying three providers, an email pair and a footnote is
+ * about 690px however it is packed, so on a short window the room has to come
+ * from around it rather than out of it. The page chrome gives up its padding
+ * before the card gives up a button — a card cut off at the fold is the worst
+ * of the available outcomes.
+ */
+@media (max-height: 880px) and (min-width: 941px) {
+  /* Height is what is scarce, so only the vertical padding gives way. */
+  .si { padding: clamp(16px, 2.2vh, 30px) clamp(24px, 3.2vw, 46px); }
+  .si-logo { width: 40px; height: 40px; border-radius: 11px; }
+  .si-brand strong { font-size: 19px; }
+  .si-panel { padding: clamp(20px, 1.8vw, 26px); }
+}
 @media (max-height: 720px) {
   .si-splash-line { font-size: clamp(28px, 5vw, 62px); }
   .si-splash-foot { gap: 18px; }
@@ -603,21 +664,27 @@ export default function LoginPage() {
         * user can Tab straight past Continue into provider buttons they cannot
         * see, and a screen reader is handed both screens at once.
         */}
-      <header className="si-brand" inert={covered}>
-        <Image className="si-logo" src={sarthoIcon} alt="" width={184} height={184} quality={95} priority />
-        <span>
-          <strong>Sartho</strong>
-          <small>Your Career CoPilot</small>
-        </span>
-      </header>
-
       <div className="si-stage" inert={covered}>
         <section className="si-pitch">
+          <header className="si-brand">
+            <Image className="si-logo" src={sarthoIcon} alt="" width={184} height={184} quality={95} priority />
+            <span>
+              <strong>Sartho</strong>
+              <small>Your Career CoPilot</small>
+            </span>
+          </header>
+
           <h1>Your own headhunter. <em>Finally.</em></h1>
           <p>
             Someone who knows your whole career, finds the roles worth your
             experience, and makes sure you walk in ready.
           </p>
+
+          <ul className="si-proof">
+            <li>Role matching</li>
+            <li>Résumé tailoring</li>
+            <li>Interview preparation</li>
+          </ul>
         </section>
 
         <section className="si-panel">
